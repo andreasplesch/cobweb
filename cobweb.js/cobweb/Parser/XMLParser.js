@@ -335,7 +335,7 @@ function ($,
 				var node = this .getExecutionContext () .createNode (element .nodeName, false);
 
 				//AP: attach node to DOM element for access from DOM.
-            element .x3d = node;
+				element .x3d = node;
 
 				this .DEF (element, node);
 				this .addNode (element, node);
@@ -364,6 +364,9 @@ function ($,
 				if (this .id (name))
 				{
 					var node = this .getExecutionContext () .createProto (name, false);
+
+					//AP: attach node to DOM element for access from DOM.
+					element .x3d = node;
 
 					this .DEF (element, node);
 					this .addNode (element, node);
