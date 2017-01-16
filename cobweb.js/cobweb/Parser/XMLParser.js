@@ -53,6 +53,7 @@ define ([
 	"cobweb/Basic/X3DArrayField",
 	"cobweb/Fields",
 	"cobweb/Parser/Parser",
+	"cobweb/Parser/HTMLSupport",
 	"cobweb/Prototype/X3DExternProtoDeclaration",
 	"cobweb/Prototype/X3DProtoDeclaration",
 	"cobweb/Bits/X3DConstants",
@@ -62,6 +63,7 @@ function ($,
           X3DArrayField,
           Fields,
           Parser,
+	  HTMLSupport,   
           X3DExternProtoDeclaration,
           X3DProtoDeclaration,
           X3DConstants)
@@ -149,6 +151,7 @@ function ($,
 					this .X3D (xml);
 					break;
 				case "Scene":
+				case "SCENE":
 					this .Scene (xml);
 					break;
 				default:
@@ -178,9 +181,11 @@ function ($,
 				switch (element .nodeName)
 				{
 					case "head":
+					case "HEAD":
 						this .head (element);
 						continue;
 					case "Scene":
+					case "SCENE":
 						this .Scene (element);
 						continue;
 				}
@@ -212,12 +217,15 @@ function ($,
 				switch (element .nodeName)
 				{
 					case "component":
+					case "COMPONENT":
 						this .component (element);
 						continue;
 					case "unit":
+					case "UNIT":
 						this .unit (element);
 						continue;
 					case "meta":
+					case "META":
 						this .meta (element);
 						continue;
 				}
@@ -251,7 +259,7 @@ function ($,
 			var
 				category         = element .getAttribute ("category"),
 				name             = element .getAttribute ("name"),
-				conversionFactor = element .getAttribute ("conversionFactor");
+				conversionFactor = element .getAttribute ("conversionFactor"); //works for html5 as well
 
 			if (category == null)
 				return console .warn ("XML Parser Error: Bad unit statement: Expected category attribute.");
@@ -297,14 +305,17 @@ function ($,
 					return;
 				
 				case "ExternProtoDeclare":
+				case "EXTERNPROTODECLARE":
 					this .ExternProtoDeclare (child);
 					return;
 
 				case "ProtoDeclare":
+				case "PROTODECLARE":
 					this .ProtoDeclare (child);
 					return;
 
 				case "ProtoInstance":
+				case "PROTOINSTANCE":
 					this .ProtoInstance (child);
 					return;
 
@@ -335,7 +346,7 @@ function ($,
 				var node = this .getExecutionContext () .createNode (element .nodeName, false);
 
 				//AP: attach node to DOM element for access from DOM.
-            element .x3d = node;
+				element .x3d = node;
 
 				this .DEF (element, node);
 				this .addNode (element, node);
@@ -404,23 +415,28 @@ function ($,
 					return;
 
 				case "field":
+				case "FIELD":
 					this .field (child);
 					return;
 
 				case "fieldValue":
+				case "FIELDVALUE":
 					if (protoInstance)
 						this .fieldValue (child);
 					return;
 						
 				case "ExternProtoDeclare":
+				case "EXTERNPROTODECLARE":
 					this .ExternProtoDeclare (child);
 					return;
 
 				case "ProtoDeclare":
+				case "PROTODECLARE":
 					this .ProtoDeclare (child);
 					return;
 
 				case "ProtoInstance":
+				case "PROTOINSTANCE":
 					this .ProtoInstance (child);
 					return;
 
@@ -448,7 +464,18 @@ function ($,
 				var name = element .getAttribute ("DEF");
 
 				if (name)
+				{
+					try
+					{
+						var namedNode = this .getExecutionContext () .getNamedNode (name);
+
+						this .getExecutionContext () .updateNamedNode (this .getExecutionContext () .getUniqueName (name), namedNode);
+					}
+					catch (error)
+					{ }
+
 					this .getExecutionContext () .updateNamedNode (name, node);
+				}
 			}
 			catch (error)
 			{
@@ -568,7 +595,7 @@ function ($,
 				var
 					name      = attribute .name,
 					value     = attribute .value,
-					field     = node .getField (name),
+					field     = node .getField (this .attributeToCamelCase (name)),
 					fieldType = this .fieldTypes [field .getType ()];
 
 				this .parser .setInput (value);
@@ -584,7 +611,7 @@ function ($,
 		{
 			var
 				node  = this .getParent (),
-				field = node .getCDATA ();
+				field = node .getSourceText ();
 
 			if (field)
 			{
@@ -868,9 +895,10 @@ function ($,
 					throw new Error ("Bad ROUTE statement: Expected toField attribute.");
 
 				var
-					sourceNode      = this .getExecutionContext () .getLocalNode (sourceNodeName),
-					destinationNode = this .getExecutionContext () .getLocalNode (destinationNodeName),
-					route           = this .getExecutionContext () .addRoute (sourceNode, sourceField, destinationNode, destinationField);
+					executionContext = this .getExecutionContext (),
+					sourceNode       = executionContext .getLocalNode (sourceNodeName),
+					destinationNode  = executionContext .getLocalNode (destinationNodeName),
+					route            = executionContext .addRoute (sourceNode, sourceField, destinationNode, destinationField);
 
 				element .x3d = route;
 			}
@@ -912,6 +940,13 @@ function ($,
 
 			return true;
 		},
+		attributeToCamelCase: function (name)
+		{
+			if (name !== name .toLowerCase())
+				return name ;
+			
+			return HTMLSupport .attributeLowerCaseToCamelCase [name] ;
+		},
 	};
 
 	XMLParser .prototype .fieldTypes = [ ];
@@ -922,8 +957,8 @@ function ($,
 	XMLParser .prototype .fieldTypes [X3DConstants .SFFloat]     = Parser .prototype .sffloatValue;
 	XMLParser .prototype .fieldTypes [X3DConstants .SFImage]     = Parser .prototype .sfimageValue;
 	XMLParser .prototype .fieldTypes [X3DConstants .SFInt32]     = Parser .prototype .sfint32Value;
-	XMLParser .prototype .fieldTypes [X3DConstants .SFMatrix3f]  = Parser .prototype .sfmatrix4dValue;
-	XMLParser .prototype .fieldTypes [X3DConstants .SFMatrix3d]  = Parser .prototype .sfmatrix4fValue;
+	XMLParser .prototype .fieldTypes [X3DConstants .SFMatrix3f]  = Parser .prototype .sfmatrix3dValue;
+	XMLParser .prototype .fieldTypes [X3DConstants .SFMatrix3d]  = Parser .prototype .sfmatrix3fValue;
 	XMLParser .prototype .fieldTypes [X3DConstants .SFMatrix4f]  = Parser .prototype .sfmatrix4dValue;
 	XMLParser .prototype .fieldTypes [X3DConstants .SFMatrix4d]  = Parser .prototype .sfmatrix4fValue;
 	XMLParser .prototype .fieldTypes [X3DConstants .SFNode]      = function (field) { field .set (null); };

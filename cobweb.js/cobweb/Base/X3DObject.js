@@ -122,6 +122,16 @@ function ()
 			for (var key in interests)
 				interests [key] ();
 		},
+		toVRMLString: function ()
+		{ },
+		toXMLString: function ()
+		{
+			var stream = { string: "" };
+
+			this .toXMLStream (stream);
+
+			return stream .string;
+		},
 		dispose: function () { },
 	};
 

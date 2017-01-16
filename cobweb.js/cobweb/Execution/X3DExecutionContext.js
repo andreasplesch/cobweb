@@ -62,6 +62,8 @@ define ("cobweb/Execution/X3DExecutionContext", [
 	"cobweb/Bits/X3DCast",
 	"cobweb/Bits/X3DConstants",
 	"standard/Networking/URI",
+	"standard/Math/Algorithm",
+	"cobweb/InputOutput/Generator",
 ],
 function ($,
           Fields,
@@ -76,7 +78,9 @@ function ($,
           X3DRoute,
           X3DCast,
           X3DConstants,
-          URI)
+          URI,
+          Algorithm,
+          Generator)
 {
 "use strict";
 
@@ -131,6 +135,14 @@ function ($,
 		{
 			return false;
 		},
+		getSpecificationVersion: function ()
+		{
+			return this .specificationVersion;
+		},
+		getEncoding: function ()
+		{
+			return this .encoding;
+		},
 		getWorldURL: function ()
 		{
 			return this .getURL () .location;
@@ -147,9 +159,17 @@ function ($,
 		{
 			this .profile = profile;
 		},
+		getProfile: function (profile)
+		{
+			return this .profile;
+		},
 		addComponent: function (component)
 		{
 			this .components .add (component .name, component);
+		},
+		getComponents: function ()
+		{
+			return this .components;
 		},
 		createNode: function (typeName, setup)
 		{
@@ -207,7 +227,7 @@ function ($,
 				throw new Error ("Couldn't update named node: node must be of type SFNode.");
 
 			name = String (name);
-			node = new Fields .SFNode (node .valueOf ());
+			node = new Fields .SFNode (node instanceof Fields .SFNode ? node .getValue () : node);
 
 			if (! node .getValue ())
 				throw new Error ("Couldn't update named node: node IS NULL.");
@@ -241,6 +261,34 @@ function ($,
 				throw new Error ("Named node '" + name + "' not found.");
 
 			return node;
+		},
+		getUniqueName: function (name)
+		{
+			var _TrailingNumbers = /(_\d+$)/;
+
+			name = name .replace (_TrailingNumbers, "");
+
+			var
+				newName = name,
+				i       = 64;
+
+			for (; i;)
+			{
+				if (this .namedNodes [newName] || newName .length === 0)
+				{
+					var
+						min = i,
+						max = i <<= 1;
+		
+					newName  = name;
+					newName += '_';
+					newName += Math .round (Algorithm .random (min, max));
+				}
+				else
+					break;
+			}
+		
+			return newName;
 		},
 		addImportedNode: function (inlineNode, exportedName, importedName)
 		{
@@ -293,6 +341,10 @@ function ($,
 
 			throw new Error ("Imported node '" + importedName + "' not found.");
 		},
+		getImportedNodes: function ()
+		{
+			return this .importedNodes;
+		},
 		getLocalNode: function (name)
 		{
 			try
@@ -301,25 +353,34 @@ function ($,
 			}
 			catch (error)
 			{
-				try
-				{
-					var importedNode = this .importedNodes [name];
+				var importedNode = this .importedNodes [name];
 
-					if (importedNode)
-						return new Fields .SFNode (importedNode);
+				if (importedNode)
+					return new Fields .SFNode (importedNode);
 
-					throw true;
-				}
-				catch (error)
-				{
-					throw new Error ("Unknown named or imported node '" + name + "'.");
-				}
+				throw new Error ("Unknown named or imported node '" + name + "'.");
 			}
 		},
 		setRootNodes: function () { },
 		getRootNodes: function ()
 		{
 			return this .rootNodes_;
+		},
+		getProtoDeclaration: function (name)
+		{
+			return this .protos .get (name);
+		},
+		getProtoDeclarations: function ()
+		{
+			return this .protos;
+		},
+		getExternProtoDeclaration: function (name)
+		{
+			return this .externprotos .get (name);
+		},
+		getExternProtoDeclarations: function ()
+		{
+			return this .externprotos;
 		},
 		addRoute: function (sourceNode, sourceField, destinationNode, destinationField)
 		{
@@ -347,7 +408,7 @@ function ($,
 				{
 					if (sourceNode instanceof ImportedNode)
 						sourceNode .addRoute (sourceNode, sourceField, destinationNode, destinationField);
-	
+
 					if (destinationNode instanceof ImportedNode)
 						destinationNode .addRoute (sourceNode, sourceField, destinationNode, destinationField);
 
@@ -422,6 +483,10 @@ function ($,
 
 			return this .routeIndex [id];
 		},
+		getRoutes: function ()
+		{
+			return this .routes;
+		},
 		changeViewpoint: function (name)
 		{
 			try
@@ -446,6 +511,54 @@ function ($,
 				else
 					throw new Error ("Viewpoint named '" + name + "' not found.");
 			}
+		},
+		toXMLStream: function (stream)
+		{
+			Generator .PushExecutionContext (this);
+			Generator. EnterScope ();
+			Generator .ImportedNodes (this .getImportedNodes ());
+
+			// Output extern protos
+
+			this .getExternProtoDeclarations () .toXMLStream (stream);
+
+			// Output protos
+
+			this .getProtoDeclarations () .toXMLStream (stream);
+		
+			// Output root nodes
+
+			var rootNodes = this .getRootNodes ();
+
+			if (rootNodes .length)
+			{
+				rootNodes .toXMLStream (stream);
+
+				stream .string += "\n";
+			}
+		
+			// Output imported nodes
+
+			var importedNodes = this .getImportedNodes ();
+
+			for (var importedName in importedNodes)
+			{
+				try
+				{
+					importedNodes [importedName] .toXMLStream (stream);
+
+					stream .string += "\n";
+				}
+				catch (error)
+				{ }
+			}
+		
+			// Output routes
+
+			this .getRoutes () .toXMLStream (stream);
+
+			Generator .LeaveScope ();
+			Generator .PopExecutionContext ();
 		},
 	});
 

@@ -50,14 +50,27 @@
 
 define ([
 	"jquery",
+	"cobweb/Bits/X3DConstants",
 ],
-function ($)
+function ($,
+          X3DConstants)
 {
 "use strict";
 
 	return {
 		indent: "",
 		indentChar: "  ",
+		executionContextStack: [ null ],
+		importedNodesIndex: { },
+		exportedNodesIndex: { },
+		nodes: { },
+		names: { },
+		namesByNode: { },
+		importedNames: { },
+		routeNodes: { },
+		level: 0,
+		newName: 0,
+		containerFields: [ ],
 		Indent: function ()
 		{
 			return this .indent;
@@ -69,6 +82,256 @@ function ($)
 		DecIndent: function ()
 		{
 			this .indent = this .indent .substr (0, this .indent .length - this .indentChar .length);
+		},
+		PushExecutionContext: function (executionContext)
+		{
+			this .executionContextStack .push (executionContext);
+
+			this .importedNodesIndex [executionContext .getId ()] = { };
+			this .exportedNodesIndex [executionContext .getId ()] = { };
+		},
+		PopExecutionContext: function ()
+		{
+			this .executionContextStack .pop ();
+
+			if (this .ExecutionContext ())
+				return;
+
+			this .importedNodesIndex = { };
+			this .exportedNodesIndex = { };
+		},
+		ExecutionContext: function ()
+		{
+			return this .executionContextStack [this .executionContextStack .length - 1];
+		},
+		EnterScope: function ()
+		{
+			if (this .level === 0)
+				this .newName = 0;
+		
+			++ this .level;
+		},
+		LeaveScope: function ()
+		{
+			-- this .level;
+		
+			if (this .level === 0)
+			{
+				this .nodes         = { };
+				this .names         = { };
+				this .namesByNode   = { };
+				this .importedNames = { };
+				this .importedNodes = { };
+			}
+		},
+		ExportedNodes: function (exportedNodes)
+		{
+		},
+		ImportedNodes: function (importedNodes)
+		{
+			var index = this .importedNodesIndex [this .ExecutionContext () .getId ()];
+
+			for (var importedName in importedNodes)
+			{
+				try
+				{
+					index [importedNodes [importedName] .getInlineNode () .getId ()] = true;
+				}
+				catch (error)
+				{ }
+			}
+		},
+		AddImportedNode: function (exportedNode, importedName)
+		{
+			this .importedNames [exportedNode .getId ()] = importedName;
+		},
+		AddRouteNode: function (routeNode)
+		{
+			this .routeNodes [routeNode .getId ()] = true;
+		},
+		ExistsRouteNode: function (routeNode)
+		{
+			if (this .routeNodes [routeNode .getId ()])
+				return true;
+	
+			return false;
+		},
+		IsSharedNode: function (baseNode)
+		{
+			return false;
+		},
+		AddNode: function (baseNode)
+		{
+			this .nodes [baseNode .getId ()] = true;
+
+			this .AddRouteNode (baseNode);
+		},
+		ExistsNode: function (baseNode)
+		{
+			return this .nodes [baseNode .getId ()] !== undefined;
+		},
+		Name: function (baseNode)
+		{
+			// Is the node already in index
+
+			var name = this .namesByNode [baseNode .getId ()];
+
+			if (name !== undefined)
+				return name;
+
+			// The node has no name
+
+			if (baseNode .getName () .length === 0)
+			{
+				if (this .NeedsName (baseNode))
+				{
+					var name = this .UniqueName ();
+		
+					this .names [name]                     = baseNode;
+					this .namesByNode [baseNode .getId ()] = name;
+
+					return name;
+				}
+		
+				// The node doesn't need a name
+
+				return baseNode .getName ();
+			}
+		
+			// The node has a name
+		 	
+			var _TrailingNumbers = /(_\d+$)/;
+
+			var name      = baseNode .getName ();
+			var hasNumber = name .match (_TrailingNumbers) !== null;
+		
+			name = name .replace (_TrailingNumbers, "");
+		
+			if (name .length === 0)
+			{
+				if (this .NeedsName (baseNode))
+					name = this .UniqueName ();
+
+				else
+					return "";
+			}
+			else
+			{
+				var
+					i       = 0,
+					newName = hasNumber ? name + '_' + (++ i) : name;
+
+				while (this .names [newName] !== undefined)
+				{
+					newName = name + '_' + (++ i);
+				}
+
+				name = newName;
+			}
+
+			this .names [name]                     = baseNode;
+			this .namesByNode [baseNode .getId ()] = name;
+
+			return name;
+		},
+		NeedsName: function (baseNode)
+		{
+			if (baseNode .getCloneCount () > 1)
+				return true;
+
+			if (baseNode .hasRoutes ())
+				return true;
+
+			var
+				executionContext = baseNode .getExecutionContext (),
+				index            = this .importedNodesIndex [executionContext .getId ()];
+
+			if (index)
+			{
+				if (index [baseNode .getId ()])
+					return true;
+			}
+
+			var index = this .exportedNodesIndex [executionContext .getId ()];
+
+			if (index)
+			{
+				if (index [baseNode .getId ()])
+					return true;
+			}
+
+			return false;
+		},
+		UniqueName: function ()
+		{
+			for (; ;)
+			{
+				var name = '_' + (++ this .newName);
+		
+				if (this .names [name] !== undefined)
+					continue;
+
+				return name;
+			}
+		},
+		LocalName: function (baseNode)
+		{
+			var importedName = this .importedNames [baseNode .getId ()];
+
+			if (importedName !== undefined)
+				return importedName;
+
+			if (this .ExistsNode (baseNode))
+				return this .Name (baseNode);
+
+			throw new Error ("Couldn't get local name for node '" + baseNode .getTypeName () + "'.");
+		},
+		PushContainerField: function (field)
+		{
+			this .containerFields .push (field);
+		},
+		PopContainerField: function ()
+		{
+			this .containerFields .pop ();
+		},
+		ContainerField: function ()
+		{
+			if (this .containerFields .length)
+				return this .containerFields [this .containerFields .length - 1];
+
+			return null;
+		},
+		AccessType: function (accessType)
+		{
+			switch (accessType)
+			{
+				case X3DConstants .initializeOnly:
+					return "initializeOnly";
+				case X3DConstants .inputOnly:
+					return "inputOnly";
+				case X3DConstants .outputOnly:
+					return "outputOnly";
+				case X3DConstants .inputOutput:
+					return "inputOutput";
+			}
+		},
+		XMLEncode: function (string)
+		{
+			return string
+				.replace (/&/g, "&amp;")
+				.replace (/#/g, "&#35;")
+				.replace (/\\/g, "&#92;")
+				.replace (/\t/g, "&#x9;")
+				.replace (/\n/g, "&#xA;")
+				.replace (/\r/g, "&#xD;")
+				.replace (/</g, "&lt;")
+				.replace (/>/g, "&gt;")
+				.replace (/'/g, "&apos;")
+				.replace (/"/g, "&quot;");
+		},
+		escapeCDATA: function (string)
+		{
+			return string .replace (/\]\]\>/g, "\\]\\]\\>");
 		},
 	};
 });

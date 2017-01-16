@@ -51,10 +51,14 @@ define ([
 	"jquery",
 	"cobweb/Fields",
 	"cobweb/Basic/X3DBaseNode",
+	"cobweb/Bits/X3DConstants",
+	"cobweb/InputOutput/Generator",
 ],
 function ($,
           Fields,
-          X3DBaseNode)
+          X3DBaseNode,
+          X3DConstants,
+          Generator)
 {
 "use strict";
 
@@ -69,7 +73,12 @@ function ($,
 		this ._destinationField = destinationField;
 
 		//if (! (this .getExecutionContext () instanceof X3DProtoDeclaration))
+		{
 			sourceField .addFieldInterest (destinationField);
+
+			sourceField      .addOutputRoute (this);
+			destinationField .addInputRoute (this);
+		}
 	}
 
 	X3DRoute .prototype = $.extend (Object .create (X3DBaseNode .prototype),
@@ -106,15 +115,72 @@ function ($,
 		{
 			this ._sourceField .removeFieldInterest (this ._destinationField);
 
+			this ._sourceField      .removeOutputRoute (this);
+			this ._destinationField .removeInputRoute (this);
+
 			if (this .sourceNode_ .getValue ())
 				this .sourceNode_ .removeInterest (this, "set_node");
 
 			if (this .destinationNode_ .getValue ())
 				this .destinationNode_ .removeInterest (this, "set_node");
 		},
+		getSourceNode: function ()
+		{
+			///  SAI
+			return this .sourceNode_ .getValue ();
+		},
+		getSourceField: function ()
+		{
+			///  SAI
+			return this ._sourceField .getName ();
+		},
+		getDestinationNode: function ()
+		{
+			///  SAI
+			return this .destinationNode_ .getValue ();
+		},
+		getDestinationField: function ()
+		{
+			///  SAI
+			return this ._destinationField .getName ();
+		},
 		toString: function ()
 		{
 			return Object .prototype .toString (this);
+		},
+		toXMLStream: function (stream)
+		{
+			var
+				sourceNodeName      = Generator .LocalName (this .getSourceNode ()),
+				destinationNodeName = Generator .LocalName (this .getDestinationNode ());
+
+			stream .string += Generator .Indent ();
+			stream .string += "<ROUTE";
+			stream .string += " ";
+			stream .string += "fromNode='";
+			stream .string += Generator .XMLEncode (sourceNodeName);
+			stream .string += "'";
+			stream .string += " ";
+			stream .string += "fromField='";
+			stream .string += Generator .XMLEncode (this ._sourceField .getName ());
+
+			if (this ._sourceField .getAccessType () === X3DConstants .inputOutput)
+				stream .string += "_changed";
+
+			stream .string += "'";
+			stream .string += " ";
+			stream .string += "toNode='";
+			stream .string += Generator .XMLEncode (destinationNodeName);
+			stream .string += "'";
+			stream .string += " ";
+			stream .string += "toField='";
+
+			if (this ._destinationField .getAccessType () === X3DConstants .inputOutput)
+				stream .string += "set_";
+
+			stream .string += Generator .XMLEncode (this ._destinationField .getName ());
+			stream .string += "'";
+			stream .string += "/>";
 		},
 		dispose: function ()
 		{

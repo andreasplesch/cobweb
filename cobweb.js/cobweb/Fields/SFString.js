@@ -51,8 +51,12 @@ define ([
 	"jquery",
 	"cobweb/Basic/X3DField",
 	"cobweb/Bits/X3DConstants",
+	"cobweb/InputOutput/Generator",
 ],
-function ($, X3DField, X3DConstants)
+function ($,
+          X3DField,
+          X3DConstants,
+          Generator)
 {
 "use strict";
 
@@ -95,6 +99,10 @@ function ($, X3DField, X3DConstants)
 		{
 			return X3DConstants .SFString;
 		},
+		isDefaultValue: function ()
+		{
+			return this .getValue () === "";
+		},
 		set: function (value)
 		{
 			X3DField .prototype .set .call (this, String (value));
@@ -103,6 +111,10 @@ function ($, X3DField, X3DConstants)
 		toString: function ()
 		{
 			return '"'+ SFString .escape (this .getValue ()) + '"';
+		},
+		toXMLStream: function (stream)
+		{
+			stream .string += Generator .XMLEncode (this .getValue ());
 		},
 	});
 

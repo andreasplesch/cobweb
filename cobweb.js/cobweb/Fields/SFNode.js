@@ -112,7 +112,14 @@ function ($, X3DField, X3DConstants)
 	{
 	   if (this instanceof SFNode)
 	   {
-			X3DField .call (this, value ? value : null);
+			if (value)
+			{
+				value .addParent (this);
+
+				X3DField .call (this, value);
+			}
+			else
+				X3DField .call (this, null);
 
 			return new Proxy (this, handler);
 		}
@@ -149,6 +156,10 @@ function ($, X3DField, X3DConstants)
 		{
 			return this .getValue () === node .getValue ();
 		},
+		isDefaultValue: function ()
+		{
+			return this .getValue () === null;
+		},
 		set: function (value)
 		{
 			var current = this .getValue ();
@@ -171,15 +182,39 @@ function ($, X3DField, X3DConstants)
 		},
 		getNodeTypeName: function ()
 		{
-			return this .getValue () .getTypeName ();
+			var value = this .getValue ();
+
+			if (value)
+				return value .getTypeName ();
+
+			throw new Error ("SFNode.getNodeTypeName: node is null.");
 		},
 		getNodeName: function ()
 		{
-			return this .getValue () .getName ();
+			var value = this .getValue ();
+
+			if (value)
+				return value .getName ();
+
+			throw new Error ("SFNode.getNodeName: node is null.");
+		},
+		getNodeType: function ()
+		{
+			var value = this .getValue ();
+
+			if (value)
+				return value .getType () .slice ();
+
+			throw new Error ("SFNode.getNodeType: node is null.");
 		},
 		getFieldDefinitions: function ()
 		{
-			return this .getValue () .getFieldDefinitions ();
+			var value = this .getValue ();
+
+			if (value)
+				return value .getFieldDefinitions ();
+
+			throw new Error ("SFNode.getFieldDefinitions: node is null.");
 		},
 		addClones: function (count)
 		{
@@ -209,21 +244,25 @@ function ($, X3DField, X3DConstants)
 		toString: function ()
 		{
 			var node = this .getValue ();
+
 			return node ? node .toString () : "NULL";
 		},
 		toVRMLString: function ()
 		{
 			var node = this .getValue ();
+
 			return node ? node .toVRMLString () : "NULL";
 		},
-		toXMLString: function ()
+		toXMLStream: function (stream)
 		{
 			var node = this .getValue ();
-			return node ? node .toXMLString () : "<!-- NULL -->";
+
+			stream .string += node ? node .toXMLString () : "NULL";
 		},
 		dispose: function ()
 		{
 			this .set (null);
+
 			X3DField .prototype .dispose .call (this);
 		},
 	});

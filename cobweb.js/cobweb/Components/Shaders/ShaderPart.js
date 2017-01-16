@@ -70,8 +70,6 @@ function ($,
 {
 "use strict";
 
-	var parameter = new Fields .MFString ();
-
 	var shaderTypes =
 	{
 		VERTEX:          "VERTEX_SHADER",
@@ -141,7 +139,7 @@ function ($,
 
 			return "VERTEX_SHADER";
 		},
-		getCDATA: function ()
+		getSourceText: function ()
 		{
 			return this .url_;
 		},
@@ -154,7 +152,7 @@ function ($,
 			
 			this .valid = false;
 
-			new Loader (this) .loadDocument (this .url_, parameter,
+			new Loader (this) .loadDocument (this .url_, null,
 			function (data, URL)
 			{
 				if (data === null)

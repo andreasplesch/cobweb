@@ -6,8 +6,8 @@
 		<meta http-equiv="Expires" content="0"/>
 		<meta charset="utf-8"/>
 		<link rel="stylesheet" type="text/css" href="http://titania.create3000.de/fileadmin/styles.css"/>
-		<link rel="stylesheet" type="text/css" href="https://rawgit.com/create3000/cobweb/master/stable/2/2.3/cobweb.css"/>
-		<script type="text/javascript" src="https://rawgit.com/create3000/cobweb/master/stable/2/2.3/cobweb.min.js"></script>
+		<link rel="stylesheet" type="text/css" href="https://rawgit.com/create3000/cobweb/master/stable/2/2.6/cobweb.css"/>
+		<script type="text/javascript" src="https://rawgit.com/create3000/cobweb/master/stable/2/2.6/cobweb.min.js"></script>
 		<style>
 html, body {
 	margin: 0px;
@@ -131,10 +131,10 @@ X3D (function (X3DCanvases)
 	var pages =
 	[
 		{ name: 'Worlds', mobile: true },
-		{ name: 'Mad Flat 2',            mobile: false, url: [ "https://rawgit.com/create3000/cobweb/master/cobweb.js/tests/Components/Lighting/MadFlat2.x3d" ] },
+		{ name: 'Mad Flat 2',            mobile: false, url: [ "https://cdn.rawgit.com/create3000/cobweb/master/cobweb.js/tests/Components/Lighting/MadFlat2.x3d" ] },
 		{ name: 'Milkyway and Beyond',   mobile: true,  url: [ "https://cdn.rawgit.com/create3000/cobweb/master/cobweb.js/examples/paul bourke/scene.x3d" ] },
-		{ name: 'Fourmi Earth',          mobile: true,  url: [ "https://cdn.rawgit.com/create3000/cobweb/master/cobweb.js/examples/fourmilab/earth.x3d" ] },
-		{ name: 'Currencies',            mobile: true,  url: [ "https://rawgit.com/create3000/cobweb/master/cobweb.js/examples/currencies/currencies.x3d" ] },
+		//{ name: 'Fourmi Earth',          mobile: true,  url: [ "https://cdn.rawgit.com/create3000/cobweb/master/cobweb.js/examples/fourmilab/earth.x3d" ] },
+		{ name: 'Currencies',            mobile: true,  url: [ "https://cdn.rawgit.com/create3000/cobweb/master/cobweb.js/examples/currencies/currencies.x3d" ] },
 		{ name: 'Moving Circles',        mobile: true,  url: [ "https://cdn.rawgit.com/create3000/cobweb/master/cobweb.js/tests/Components/Texturing/circles/circles.x3d" ] },
 		{ name: 'Smarty Bubbles',        mobile: true,  url: [ "https://cdn.rawgit.com/create3000/cobweb/master/cobweb.js/tests/Components/Rendering/bubbles.x3d" ] },
 		{ name: 'Smashing Boxes',        mobile: true,  url: [ "https://cdn.rawgit.com/create3000/Library/master/Examples/Boxes/boxes.x3d" ] },
@@ -149,9 +149,9 @@ X3D (function (X3DCanvases)
 		{ name: 'Mediafacade Berlin',    mobile: false, url: [ "https://rawgit.com/create3000/Library/master/Examples/Vattenfall/index.x3d",             "https://rawgit.com/create3000/Library/master/Examples/Vattenfall/index.wrl" ] },
 		{ name: 'Chomp!',                mobile: true,  url: [ "https://cdn.rawgit.com/create3000/Library/master/Examples/Chomp/chomp.x3d",              "https://cdn.rawgit.com/create3000/Library/master/Examples/Chomp/chomp.wrl" ] },
 		{ name: 'The Secret Labyrinth',  mobile: false, url: [ "https://cdn.rawgit.com/create3000/Library/master/Examples/ICTS/labyrinth.x3d",           "https://cdn.rawgit.com/create3000/Library/master/Examples/ICTS/labyrinth.wrl" ] },
-		{ name: 'World Trade Center',    mobile: false, url: [ "https://cdn.rawgit.com/create3000/cobweb/master/cobweb.js/examples/alprojectsvr/wtc.x3d" ] },
-		{ name: 'Space Station Five',    mobile: true,  url: [ "https://cdn.rawgit.com/create3000/cobweb/master/cobweb.js/examples/alprojectsvr/ssf.x3d" ] },
-		{ name: 'Helicopter Simulation', mobile: true,  url: [ "http://blogofrog.com/files/vrml/ch47bsim402.wrz" ] },
+		//{ name: 'World Trade Center',    mobile: false, url: [ "https://cdn.rawgit.com/create3000/cobweb/master/cobweb.js/examples/alprojectsvr/wtc.x3d" ] },
+		//{ name: 'Space Station Five',    mobile: true,  url: [ "https://cdn.rawgit.com/create3000/cobweb/master/cobweb.js/examples/alprojectsvr/ssf.x3d" ] },
+		//{ name: 'Helicopter Simulation', mobile: true,  url: [ "http://blogofrog.com/files/vrml/ch47bsim402.wrz" ] },
 		{ name: 'Astronomy',             mobile: true,  url: [ "https://cdn.rawgit.com/create3000/Library/master/Examples/Astronomy/stage/astrnmy.x3d",  "https://cdn.rawgit.com/create3000/Library/master/Examples/Astronomy/stage/astrnmy.wrl" ] },
 		{ name: 'Treasure Island',       mobile: false, url: [ "https://cdn.rawgit.com/create3000/Library/master/Examples/TreasureIsland/index.x3d",     "https://cdn.rawgit.com/create3000/Library/master/Examples/TreasureIsland/index.wrl" ] },
 		{ name: 'Huey Huey',             mobile: true,  url: [ "https://cdn.rawgit.com/create3000/Library/master/Examples/Compel/huey.wrl" ] },
@@ -162,7 +162,7 @@ X3D (function (X3DCanvases)
 		{ name: 'Arcadia',               mobile: true,  url: [ "https://cdn.rawgit.com/create3000/Library/master/Examples/Arcadia/stage/index.x3d",      "https://cdn.rawgit.com/create3000/Library/master/Examples/Arcadia/stage/index.wrl" ] },
 		{ name: 'Foldup',                mobile: true,  url: [ "https://cdn.rawgit.com/create3000/Library/master/Examples/Compel/foldup.wrl" ] },
 		{ name: 'Lust For Life',         mobile: false, url: [ "https://cdn.rawgit.com/create3000/Library/master/Examples/LustForLife/stage/index.x3d",  "https://cdn.rawgit.com/create3000/Library/master/Examples/LustForLife/stage/index.wrl" ] },
-		{ name: 'Schacht',               mobile: false, url: [ "https://rawgit.com/create3000/Library/master/Examples/Schacht/index.x3d",                "https://rawgit.com/create3000/Library/master/Examples/Schacht/index.wrl" ] },
+		{ name: 'Schacht',               mobile: false, url: [ "https://cdn.rawgit.com/create3000/Library/master/Examples/Schacht/index.x3d",                "https://cdn.rawgit.com/create3000/Library/master/Examples/Schacht/index.wrl" ] },
 		{ name: 'Tiki World',            mobile: false, url: [ "https://cdn.rawgit.com/create3000/Library/master/Examples/TikiWorld/stage/index.x3d",    "https://cdn.rawgit.com/create3000/Library/master/Examples/TikiWorld/stage/index.wrl" ] },
 
 		{ name: 'Small', mobile: true },
@@ -181,7 +181,7 @@ X3D (function (X3DCanvases)
 		{ name: 'Terrain',               mobile: false, url: [ "https://cdn.rawgit.com/create3000/Library/master/Examples/Terrain/index.x3d",            "https://cdn.rawgit.com/create3000/Library/master/Examples/Terrain/index.wrl" ] },
 		{ name: 'Catchy Loopings',       mobile: true,  url: [ "https://cdn.rawgit.com/create3000/Library/master/Examples/Misc/shape5_a.x3d" ] },
 		{ name: 'Star World',            mobile: true,  url: [ "https://cdn.rawgit.com/create3000/Library/master/Examples/Misc/starworld.x3d" ] },
-		{ name: 'Torus Breath',          mobile: true,  url: [ "https://rawgit.com/create3000/Library/master/Examples/Misc/torusbreath2.x3d" ] },
+		{ name: 'Torus Breath',          mobile: true,  url: [ "https://cdn.rawgit.com/create3000/Library/master/Examples/Misc/torusbreath2.x3d" ] },
 		{ name: 'Movie Truck',           mobile: false, url: [ "https://cdn.rawgit.com/create3000/Library/master/Examples/MovieTruck/stage/index.x3d",   "https://cdn.rawgit.com/create3000/Library/master/Examples/MovieTruck/stage/index.wrl" ] },
 
 		{ name: 'Simple', mobile: true },
@@ -191,7 +191,7 @@ X3D (function (X3DCanvases)
 		{ name: 'Geometry2D',          mobile: true,  url: [ "https://cdn.rawgit.com/create3000/cobweb/master/cobweb.js/tests/Components/Geometry2D/Geometry2D.x3d" ] },
 		{ name: 'Geometry3D',          mobile: true,  url: [ "https://cdn.rawgit.com/create3000/cobweb/master/cobweb.js/tests/Components/Geometry3D/Geometry3D.x3d" ] },
 		{ name: 'PointLight',          mobile: false, url: [ "https://cdn.rawgit.com/create3000/cobweb/master/cobweb.js/tests/Components/Lighting/PointLight.x3d" ] },
-		{ name: 'SpotLight',           mobile: false, url: [ "https://rawgit.com/create3000/cobweb/master/cobweb.js/tests/Components/Lighting/SpotLight.x3d" ] },
+		{ name: 'SpotLight',           mobile: false, url: [ "https://cdn.rawgit.com/create3000/cobweb/master/cobweb.js/tests/Components/Lighting/SpotLight.x3d" ] },
 		{ name: 'LocalLight',          mobile: false, url: [ "https://cdn.rawgit.com/create3000/cobweb/master/cobweb.js/tests/Components/Lighting/LocalLight.x3d" ] },
 		{ name: 'LayerSet',            mobile: false, url: [ "https://cdn.rawgit.com/create3000/cobweb/master/cobweb.js/tests/Components/Layering/ViewportLayer.x3d" ] },
 		{ name: 'ClipPlane',           mobile: false, url: [ "https://cdn.rawgit.com/create3000/cobweb/master/cobweb.js/tests/Components/Rendering/cubes.x3d" ] },

@@ -55,6 +55,7 @@ define ([
 	"cobweb/Components/Networking/X3DUrlObject",
 	"cobweb/Prototype/X3DProtoDeclarationNode",
 	"cobweb/Bits/X3DConstants",
+	"cobweb/InputOutput/Generator",
 ],
 function ($,
           Fields,
@@ -62,11 +63,10 @@ function ($,
           FieldDefinitionArray,
           X3DUrlObject,
           X3DProtoDeclarationNode, 
-          X3DConstants)
+          X3DConstants,
+          Generator)
 {
 "use strict";
-
-	var parameter = new Fields .MFString ();
 
 	function X3DExternProtoDeclaration (executionContext)
 	{
@@ -113,9 +113,27 @@ function ($,
 				this .scene .setLive (this .isLive () .getValue ());
 			}
 		},
-		setProtoDeclaration: function (value)
+		hasUserDefinedFields: function ()
 		{
-			this .proto = value;
+			return true;
+		},
+		setProtoDeclaration: function (proto)
+		{
+			this .proto = proto;
+
+			var
+				fieldDefinitions      = this .getFieldDefinitions (),
+				protoFieldDefinitions = proto .getFieldDefinitions ();
+
+			for (var i = 0, length = protoFieldDefinitions .length; i < length; ++ i)
+			{
+				var
+					protoFieldDefinition = protoFieldDefinitions [i],
+					fieldDefinition      = fieldDefinitions .get (protoFieldDefinition .name);
+
+				if (fieldDefinition)
+					fieldDefinition .value .setValue (protoFieldDefinition .value);
+			}
 		},
 		getProtoDeclaration: function ()
 		{
@@ -135,7 +153,7 @@ function ($,
 
 			var Loader = require ("cobweb/InputOutput/Loader");
 
-			new Loader (this) .createX3DFromURL (this .url_, parameter, this .setInternalSceneAsync .bind (this));
+			new Loader (this) .createX3DFromURL (this .url_, null, this .setInternalSceneAsync .bind (this));
 		},
 		setInternalSceneAsync: function (value)
 		{
@@ -183,6 +201,52 @@ function ($,
 
 			this .deferred .resolve ();
 			this .deferred = $.Deferred ();
+		},
+		toXMLStream: function (stream)
+		{
+			stream .string += Generator .Indent ();
+			stream .string += "<ExternProtoDeclare";
+			stream .string += " ";
+			stream .string += "name='";
+			stream .string += Generator .XMLEncode (this .getName ());
+			stream .string += "'";
+			stream .string += " ";
+			stream .string += "url='";
+
+			this .url_ .toXMLStream (stream);
+
+			stream .string += "'";
+			stream .string += ">\n";
+
+			Generator .IncIndent ();
+
+			var fields = this .getUserDefinedFields ();
+
+			for (var name in fields)
+			{
+				var field = fields [name];
+
+				stream .string += Generator .Indent ();
+				stream .string += "<field";
+				stream .string += " ";
+				stream .string += "accessType='";
+				stream .string += Generator .AccessType (field .getAccessType ());
+				stream .string += "'";
+				stream .string += " ";
+				stream .string += "type='";
+				stream .string += field .getTypeName ();
+				stream .string += "'";
+				stream .string += " ";
+				stream .string += "name='";
+				stream .string += Generator .XMLEncode (field .getName ());
+				stream .string += "'";
+				stream .string += "/>\n";
+			}
+
+			Generator .DecIndent ();
+
+			stream .string += Generator .Indent ();
+			stream .string += "</ExternProtoDeclare>";
 		},
 	});
 

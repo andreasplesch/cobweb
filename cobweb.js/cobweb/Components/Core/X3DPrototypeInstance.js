@@ -55,6 +55,7 @@ define ([
 	"cobweb/Components/Core/X3DNode",
 	"cobweb/Execution/X3DExecutionContext",
 	"cobweb/Bits/X3DConstants",
+	"cobweb/InputOutput/Generator",
 ],
 function ($,
           FieldDefinitionArray,
@@ -62,7 +63,8 @@ function ($,
           X3DChildObject,
           X3DNode,
           X3DExecutionContext,
-          X3DConstants)
+          X3DConstants,
+          Generator)
 {
 "use strict";
 
@@ -116,7 +118,8 @@ function ($,
 			{
 				// If there is a proto the externproto is completely loaded.
 			
-				this .metadata_ = proto .metadata_;
+				if (! this .metadata_ .getSet ())
+					this .metadata_ = proto .metadata_;
 
 				if (this .protoNode .isExternProto)
 				{
@@ -142,6 +145,9 @@ function ($,
 							// Continue if field is eventIn or eventOut.
 							if (! (field .getAccessType () & X3DConstants .initializeOnly))
 								continue;
+
+if (field .getSet () && field .getName () == "metadata")
+	console .log (this .getTypeName (), this .getId (), field .getName (), field .getId (), field .getValue ());
 
 							// Is set during parse.	
 							if (field .getSet ())
@@ -263,6 +269,288 @@ function ($,
 					console .log (error);
 				}
 			}
+		},
+		toXMLStream: function (stream)
+		{
+			if (Generator .IsSharedNode (this))
+			{
+				stream .string += Generator .Indent ();
+				stream .string += "<!-- NULL -->";		
+				return;
+			}
+
+			Generator .EnterScope ();
+
+			var name = Generator .Name (this);
+
+			if (name .length)
+			{
+				if (Generator .ExistsNode (this))
+				{
+					stream .string += Generator .Indent ();
+					stream .string += "<ProtoInstance";
+					stream .string += " ";
+					stream .string += "name='";
+					stream .string += Generator .XMLEncode (this .getTypeName ());
+					stream .string += "'";
+					stream .string += " ";
+					stream .string += "USE='";
+					stream .string += Generator .XMLEncode (name);
+					stream .string += "'";
+
+					var containerField = Generator .ContainerField ();
+
+					if (containerField)
+					{
+						if (containerField .getName () !== this .getContainerField ())
+						{
+							stream .string += " ";
+							stream .string += "containerField='";
+							stream .string += Generator .XMLEncode (containerField .getName ());
+							stream .string += "'";
+						}
+					}
+
+					stream .string += "/>";
+
+					Generator .LeaveScope ();
+					return;
+				}
+			}
+
+			stream .string += Generator .Indent ();
+			stream .string += "<ProtoInstance";
+			stream .string += " ";
+			stream .string += "name='";
+			stream .string += Generator .XMLEncode (this .getTypeName ());
+			stream .string += "'";
+
+			if (name .length)
+			{
+				Generator .AddNode (this);
+
+				stream .string += " ";
+				stream .string += "DEF='";
+				stream .string += Generator .XMLEncode (name);
+				stream .string += "'";
+			}
+
+			var containerField = Generator .ContainerField ();
+
+			if (containerField)
+			{
+				if (containerField .getName () !== this .getContainerField ())
+				{
+					stream .string += " ";
+					stream .string += "containerField='";
+					stream .string += Generator .XMLEncode (containerField .getName ());
+					stream .string += "'";
+				}
+			}
+		
+			var
+				fields   = this .getChangedFields (),
+				metadata = this .metadata_;
+
+			try
+			{
+				metadata = this .getField ("metadata");
+			}
+			catch (error)
+			{ }
+
+			if (metadata === this .metadata_)
+			{
+				fields = fields .filter (function (value) { return value !== this .metadata_; } .bind (this));
+			}
+
+			if (fields .length === 0 && (metadata === this .metadata_ ? true || ! metadata .getValue () : true))
+			{
+				stream .string += "/>";
+			}
+			else
+			{
+				stream .string += ">\n";
+
+				Generator .IncIndent ();
+
+				var references = [ ];
+
+				for (var i = 0, length = fields .length; i < length; ++ i)
+				{
+					var field = fields [i];
+
+					// If the field is a inputOutput and we have as reference only inputOnly or outputOnly we must output the value
+					// for this field.
+
+					var mustOutputValue = false;
+
+					if (Generator .ExecutionContext ())
+					{
+						if (field .getAccessType () === X3DConstants .inputOutput && ! $.isEmptyObject (field .getReferences ()))
+						{
+							var
+								initializableReference = false,
+								fieldReferences        = field .getReferences ();
+
+							for (var id in fieldReferences)
+							{
+								initializableReference |= fieldReferences [id] .isInitializable ();
+							}
+
+							if (! initializableReference)
+								mustOutputValue = true;
+						}
+					}
+
+					// If we have no execution context we are not in a proto and must not generate IS references the same is true
+					// if the node is a shared node as the node does not belong to the execution context.
+
+					if ($.isEmptyObject (field .getReferences ()) || ! Generator .ExecutionContext () || mustOutputValue)
+					{
+						if (mustOutputValue)
+							references .push (field);
+
+						switch (field .getType ())
+						{
+							case X3DConstants .MFNode:
+							{
+								stream .string += Generator .Indent ();
+								stream .string += "<fieldValue";
+								stream .string += " ";
+								stream .string += "name='";
+								stream .string += Generator .XMLEncode (field .getName ());
+								stream .string += "'";
+
+								if (field .length === 0)
+								{
+									stream .string += "/>\n";
+								}
+								else
+								{
+									stream .string += ">\n";
+
+									Generator .IncIndent ();
+
+									field .toXMLStream (stream);
+
+									stream .string += "\n";
+
+									Generator .DecIndent ();
+
+									stream .string += Generator .Indent ();
+									stream .string += "</fieldValue>\n";
+								}
+
+								break;
+							}
+							case X3DConstants .SFNode:
+							{
+								if (field .getValue () !== null)
+								{
+									stream .string += Generator .Indent ();
+									stream .string += "<fieldValue";
+									stream .string += " ";
+									stream .string += "name='";
+									stream .string += Generator .XMLEncode (field .getName ())
+									stream .string += "'";
+									stream .string += ">\n";
+									
+									Generator .IncIndent ();
+
+									field .toXMLStream (stream);
+
+									stream .string += "\n";
+
+									Generator .DecIndent ();
+
+									stream .string += Generator .Indent ();
+									stream .string += "</fieldValue>\n";		
+									break;
+								}
+		
+								// Proceed with next case.
+							}
+							default:
+							{
+								stream .string += Generator .Indent ();
+								stream .string += "<fieldValue";
+								stream .string += " ";
+								stream .string += "name='";
+								stream .string += Generator .XMLEncode (field .getName ())
+								stream .string += "'";
+								stream .string += " ";
+								stream .string += "value='";
+
+								field .toXMLStream (stream);
+
+								stream .string += "'";
+								stream .string += "/>\n";
+								break;
+							}
+						}
+					}
+					else
+					{
+						references .push (field);
+					}
+				}
+
+				if (references .length)
+				{
+					stream .string += Generator .Indent ();
+					stream .string += "<IS>";
+					stream .string += "\n";
+
+					Generator .IncIndent ();
+		
+					for (var i = 0, length = references .length; i < length; ++ i)
+					{
+						var
+							field       = references [i],
+							protoFields = field .getReferences ()
+
+						for (var id in protoFields)
+						{
+							var protoField = protoFields [id];
+
+							stream .string += Generator .Indent ();
+							stream .string += "<connect";
+							stream .string += " ";
+							stream .string += "nodeField='";
+							stream .string += Generator .XMLEncode (field .getName ());
+							stream .string += "'";
+							stream .string += " ";
+							stream .string += "protoField='";
+							stream .string += Generator .XMLEncode (protoField .getName ());
+							stream .string += "'";
+							stream .string += "/>\n";
+						}
+					}
+
+					Generator .DecIndent ();
+
+					stream .string += Generator .Indent ();
+					stream .string += "</IS>\n";
+				}
+
+				if (metadata === this .metadata_)
+				{
+					if (metadata .getValue ())
+					{
+						metadata .toXMLStream (stream);
+
+						stream .string += "\n";
+					}
+				}
+
+				Generator .DecIndent ();
+
+				stream .string += Generator .Indent ();
+				stream .string += "</ProtoInstance>";
+			}
+
+			Generator .LeaveScope ();
 		},
 	});
 

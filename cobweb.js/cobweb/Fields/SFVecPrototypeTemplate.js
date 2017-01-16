@@ -47,7 +47,7 @@
  ******************************************************************************/
 
 
-define ([
+define ("cobweb/Fields/SFVecPrototypeTemplate", [
 	"jquery",
 	"cobweb/Basic/X3DField",
 ],
@@ -66,6 +66,10 @@ function ($, X3DField)
 			equals: function (vector)
 			{
 				return this .getValue () .equals (vector .getValue ());
+			},
+			isDefaultValue: function (vector)
+			{
+				return this .getValue () .equals (Type .Zero);
 			},
 			set: function (value)
 			{
@@ -106,6 +110,10 @@ function ($, X3DField)
 			toString: function ()
 			{
 				return this .getValue () .toString ();
+			},
+			toXMLStream: function (stream)
+			{
+				stream .string += this .getValue () .toString ();
 			},
 		});
 	};

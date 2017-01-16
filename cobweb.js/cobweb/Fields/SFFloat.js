@@ -79,6 +79,10 @@ function ($, X3DField, X3DConstants)
 		{
 			return X3DConstants .SFFloat;
 		},
+		isDefaultValue: function ()
+		{
+			return this .getValue () === 0;
+		},
 		set: function (value)
 		{
 			X3DField .prototype .set .call (this, +value);
@@ -87,6 +91,10 @@ function ($, X3DField, X3DConstants)
 		toString: function ()
 		{
 			return String (this .getValue ());
+		},
+		toXMLStream: function (stream)
+		{
+			stream .string += String (this .getValue ());
 		},
 	});
 

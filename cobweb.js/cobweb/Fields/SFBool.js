@@ -71,6 +71,10 @@ function ($, X3DField, X3DConstants)
 		{
 			return new SFBool (this .getValue ());
 		},
+		isDefaultValue: function ()
+		{
+			return this .getValue () === false;
+		},
 		set: function (value)
 		{
 			X3DField .prototype .set .call (this, Boolean (value));
@@ -91,6 +95,10 @@ function ($, X3DField, X3DConstants)
 		toString: function ()
 		{
 			return this .getValue () ? "TRUE" : "FALSE";
+		},
+		toXMLStream: function (stream)
+		{
+			stream .string += this .getValue () ? "true" : "false";
 		},
 	});
 

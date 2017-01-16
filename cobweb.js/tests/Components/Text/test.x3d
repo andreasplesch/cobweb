@@ -30,7 +30,7 @@
                   <Material/>
                 </Appearance>
                 <Text
-                    string='"3D Text", "3D Text"'
+                    string='"\\\"&apos;&lt;&gt;&#xD;&#xA;&#x9;&amp;&#35;" "3D Text", "3D Text"'
                     solid='true'/>
               </Shape>
             </Transform>

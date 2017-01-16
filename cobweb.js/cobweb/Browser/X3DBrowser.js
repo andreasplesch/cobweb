@@ -323,7 +323,7 @@ function ($,
 
 			this .addLoadCount (loader);
 
-			loader .createX3DFromURL (url, parameter,
+			loader .createX3DFromURL (url, null,
 			function (scene)
 			{
 				this .removeLoadCount (loader);
@@ -357,7 +357,7 @@ function ($,
 			var
 				currentScene = this .currentScene,
 				external     = this .isExternal (),
-				scene        = new Loader (this .getWorld ()) .createX3DFromURL (url, parameter);
+				scene        = new Loader (this .getWorld ()) .createX3DFromURL (url, null);
 
 			if (! external)
 			{

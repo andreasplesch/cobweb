@@ -67,6 +67,10 @@ function ($, X3DField)
 			{
 				return this .getValue () .equals (matrix .getValue ());
 			},
+			isDefaultValue: function ()
+			{
+				return this .getValue () .equals (Matrix .Identity);
+			},
 			set: function (value)
 			{
 				this .getValue () .assign (value);
@@ -130,6 +134,10 @@ function ($, X3DField)
 			toString: function ()
 			{
 				return this .getValue () .toString ();
+			},
+			toXMLStream: function (stream)
+			{
+				stream .string += this .getValue () .toString ();
 			},
 		});
 	};

@@ -129,7 +129,7 @@ define ([
 	//"cobweb/Components/H-Anim/HAnimJoint",
 	//"cobweb/Components/H-Anim/HAnimSegment",
 	//"cobweb/Components/H-Anim/HAnimSite",
-	//"cobweb/Components/CubeMapTexturing/ImageCubeMapTexture",
+	"cobweb/Components/CubeMapTexturing/ImageCubeMapTexture",
 	"cobweb/Components/Texturing/ImageTexture", // VRML
 	//"cobweb/Components/Texturing3D/ImageTexture3D",
 	"cobweb/Components/Geometry3D/IndexedFaceSet", // VRML
@@ -351,7 +351,7 @@ function (Anchor,
           //HAnimJoint,
           //HAnimSegment,
           //HAnimSite,
-          //ImageCubeMapTexture,
+          ImageCubeMapTexture,
           ImageTexture,
           //ImageTexture3D,
           IndexedFaceSet,
@@ -580,7 +580,7 @@ function (Anchor,
 		//HAnimJoint:                   HAnimJoint,
 		//HAnimSegment:                 HAnimSegment,
 		//HAnimSite:                    HAnimSite,
-		//ImageCubeMapTexture:          ImageCubeMapTexture,
+		ImageCubeMapTexture:          ImageCubeMapTexture,
 		ImageTexture:                 ImageTexture,
 		//ImageTexture3D:               ImageTexture3D,
 		IndexedFaceSet:               IndexedFaceSet,
@@ -725,8 +725,11 @@ function (Anchor,
 	function createInstance (executionContext) { return new this (executionContext); }
 
 	for (var name in supportedNodes)
+	{
 		supportedNodes [name] .createInstance = createInstance .bind (supportedNodes [name]);
-
+		supportedNodes [name.toUpperCase()] = supportedNodes [name]; 
+		supportedNodes [name.toUpperCase()] .createInstance = createInstance .bind (supportedNodes [name]);
+	}
 	return supportedNodes;
 });
 

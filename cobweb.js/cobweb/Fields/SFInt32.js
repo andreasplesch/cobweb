@@ -79,14 +79,22 @@ function ($, X3DField, X3DConstants)
 		{
 			return X3DConstants .SFInt32;
 		},
+		isDefaultValue: function ()
+		{
+			return this .getValue () === 0;
+		},
 		set: function (value)
 		{
 			X3DField .prototype .set .call (this, ~~value);
 		},
 		valueOf: X3DField .prototype .getValue,
-		toString: function ()
+		toString: function (base)
 		{
-			return String (this .getValue ());
+			return this .getValue () .toString (base);
+		},
+		toXMLStream: function (stream)
+		{
+			stream .string += this .getValue () .toString ();
 		},
 	});
 

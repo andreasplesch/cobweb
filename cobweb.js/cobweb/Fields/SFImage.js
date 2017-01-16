@@ -174,6 +174,13 @@ function ($, X3DField, ArrayFields, X3DConstants)
 		{
 			return this .getValue () .equals (image .getValue ());
 		},
+		isDefaultValue: function ()
+		{
+			return (
+				this .width  === 0 &&
+				this .height === 0 &&
+				this .comp   === 0);
+		},
 		set: function (image)
 		{
 			this .getValue () .assign (image);
@@ -190,12 +197,16 @@ function ($, X3DField, ArrayFields, X3DConstants)
 		{
 		   var
 				string = this .width + " " + this .height + " " + this .comp,
-				array  = this .array;
+				array  = this .array .getValue ();
 
 			for (var i = 0, length = this .width * this .height; i < length; ++ i)
-				string += " " + array [i];
+				string += " 0x" + array [i] .toString (16);
 
 			return string;
+		},
+		toXMLStream: function (stream)
+		{
+			stream .string += this .toString ();
 		},
 	});
 
