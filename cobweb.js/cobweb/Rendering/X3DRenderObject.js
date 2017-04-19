@@ -841,12 +841,12 @@ function ($,
                 viewportArray         .set (viewport);
                 projectionMatrixArray .set (this .getProjectionMatrix () .get ());
 
-                browser .getPointShader   () .setGlobalUniforms (this, gl, projectionMatrixArray, viewportArray);
-                browser .getLineShader    () .setGlobalUniforms (this, gl, projectionMatrixArray, viewportArray);
-                browser .getDefaultShader () .setGlobalUniforms (this, gl, projectionMatrixArray, viewportArray);
+                browser .getPointShader   () .setGlobalUniforms (this, gl, projectionMatrixArray, viewportArray, vrModelViewMatrixArray);
+                browser .getLineShader    () .setGlobalUniforms (this, gl, projectionMatrixArray, viewportArray, vrModelViewMatrixArray);
+                browser .getDefaultShader () .setGlobalUniforms (this, gl, projectionMatrixArray, viewportArray, vrModelViewMatrixArray);
 
                 for (var id in shaders)
-                    shaders [id] .setGlobalUniforms (this, gl, projectionMatrixArray, viewportArray);
+                    shaders [id] .setGlobalUniforms (this, gl, projectionMatrixArray, viewportArray, vrModelViewMatrixArray);
 
                 // Render opaque objects first
 
