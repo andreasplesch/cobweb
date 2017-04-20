@@ -131,6 +131,21 @@ function ($,
 		this .depthShapes              = [ ];
 		this .invModelViewMatrix       = new Matrix4 ();
 		this .speed                    = 0;
+        this .vrFrameData = window.VRFrameData ? new window.VRFrameData() : undefined;
+        
+        if (this .getBrowser() .enterVR) {
+            var browser = this .getBrowser();
+            var that = this;
+            this .getBrowser() .enterVR .on("enter", function() {
+                browser .enterVR .getVRDisplay(function(vrDisplay) {
+                    browser .requestAnimationFrame = vrDisplay.requestAnimationFrame.bind(vrDisplay);
+                    that .vrDisplay = vrDisplay;
+                });
+            }).on("exit", function() {
+                browser .requestAnimationFrame = window.requestAnimationFrame.bind(window);
+                that .vrDisplay = undefined;
+            });
+        }
 
 		try
 		{
