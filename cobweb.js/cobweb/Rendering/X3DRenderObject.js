@@ -81,7 +81,6 @@ function ($,
 	var
 		DEPTH_BUFFER_WIDTH          = 16,
 		DEPTH_BUFFER_HEIGHT         = DEPTH_BUFFER_WIDTH,
-        EYES                        = 2,
 		viewportArray               = new Int32Array (4),
 		projectionMatrix            = new Matrix4 (),
 		projectionMatrixArray       = new Float32Array (16),
@@ -137,7 +136,9 @@ function ($,
             var browser = this .getBrowser();
             var that = this;
             this .getBrowser() .enterVR .on("enter", function() {
-                browser .enterVR .getVRDisplay(function(vrDisplay) {
+                console .log ("Entering VR");
+                browser .enterVR .getVRDisplay () .then(function(vrDisplay) {
+                    console .log ("Retrieving VR Display", vrDisplay);
                     browser .requestAnimationFrame = vrDisplay.requestAnimationFrame.bind(vrDisplay);
                     that .vrDisplay = vrDisplay;
                 });
@@ -809,6 +810,8 @@ function ($,
 
 
             // PREPARATIONS
+            
+            var EYES = this .vrDisplay ? 2 : 1;
 
 
             if (this .isIndependent ())
@@ -907,6 +910,10 @@ function ($,
                 gl .depthMask (true);
                 gl .disable (gl .BLEND);
                 
+            }
+            
+            if(this .vrDisplay && this .vrDisplay .isPresenting) {
+                this .vrDisplay .submitFrame();
             }
 
 
