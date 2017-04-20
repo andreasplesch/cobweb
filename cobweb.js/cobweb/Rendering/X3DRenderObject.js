@@ -861,7 +861,7 @@ function ($,
 
                 gl .clear (gl .DEPTH_BUFFER_BIT);
 
-                this .getBackground () .display (this, viewport);
+                this .getBackground () .display (this, viewport, vrViewMatrices[eye]);
 
                 // Sorted blend
 
