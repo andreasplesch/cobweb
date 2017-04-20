@@ -87,6 +87,7 @@ function ($,
 		modelViewMatrix             = new Matrix4 (),
         vrModelViewMatrix           = new Matrix4 (),
         vrModelViewMatrixArray      = new Float32Array (vrModelViewMatrix),
+        Matrix4IdentityArray        = new Float32Array (new Matrix4 ()),
 		cameraSpaceProjectionMatrix = new Matrix4 (),
 		localOrientation            = new Rotation4 (0, 0, 1, 0),
 		yAxis                       = new Vector3 (0, 1, 0),
@@ -811,7 +812,15 @@ function ($,
 
             // PREPARATIONS
             
-            var EYES = this .vrDisplay ? 2 : 1;
+            var vrProjectionMatrices = [projectionMatrixArray, projectionMatrixArray]; // [0] for left eye, [1] for right eye
+            var vrViewMatrices = [Matrix4IdentityArray, Matrix4IdentityArray]; // Identity due to separate composition within shaders.
+            var EYES = 1;
+            if (this .vrDisplay && this .vrDisplay .isPresenting) {
+                this .vrDisplay .getFrameData(this .vrFrameData);
+                vrProjectionMatrices = [this .vrFrameData .leftProjectionMatrix, this .vrFrameData .rightProjectionMatrix];
+                vrViewMatrices = [this .vrFrameData .leftViewMatrix, this .vrFrameData .rightViewMatrix];
+                EYES = 2;
+            }
 
 
             if (this .isIndependent ())
@@ -859,12 +868,12 @@ function ($,
                 viewportArray         .set (viewport);
                 projectionMatrixArray .set (this .getProjectionMatrix () .get ());
 
-                browser .getPointShader   () .setGlobalUniforms (this, gl, projectionMatrixArray, viewportArray, vrModelViewMatrixArray);
-                browser .getLineShader    () .setGlobalUniforms (this, gl, projectionMatrixArray, viewportArray, vrModelViewMatrixArray);
-                browser .getDefaultShader () .setGlobalUniforms (this, gl, projectionMatrixArray, viewportArray, vrModelViewMatrixArray);
+                browser .getPointShader   () .setGlobalUniforms (this, gl, vrProjectionMatrices[eye], viewportArray, vrViewMatrices[eye]);
+                browser .getLineShader    () .setGlobalUniforms (this, gl, vrProjectionMatrices[eye], viewportArray, vrViewMatrices[eye]);
+                browser .getDefaultShader () .setGlobalUniforms (this, gl, vrProjectionMatrices[eye], viewportArray, vrViewMatrices[eye]);
 
                 for (var id in shaders)
-                    shaders [id] .setGlobalUniforms (this, gl, projectionMatrixArray, viewportArray, vrModelViewMatrixArray);
+                    shaders [id] .setGlobalUniforms (this, gl, vrProjectionMatrices[eye], viewportArray, vrViewMatrices[eye]);
 
                 // Render opaque objects first
 
