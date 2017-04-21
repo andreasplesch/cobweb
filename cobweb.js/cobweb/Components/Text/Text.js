@@ -103,7 +103,7 @@ function ($,
 		{
 		   X3DGeometryNode .prototype .initialize .call (this);
 
-		   this .fontStyle_ .addInterest (this, "set_fontStyle__");
+		   this .fontStyle_ .addInterest ("set_fontStyle__", this);
 	
 			this .set_fontStyle__ ();
 			this .eventsProcessed ();
@@ -124,21 +124,21 @@ function ($,
 		    X3DGeometryNode .prototype .set_live__ .call (this);
 
 		   if (this .isLive () .getValue ())
-				this .getBrowser () .getBrowserOptions () .PrimitiveQuality_ .addInterest (this, "eventsProcessed");
+				this .getBrowser () .getBrowserOptions () .PrimitiveQuality_ .addInterest ("eventsProcessed", this);
 		   else
-				this .getBrowser () .getBrowserOptions () .PrimitiveQuality_ .removeInterest (this, "eventsProcessed");
+				this .getBrowser () .getBrowserOptions () .PrimitiveQuality_ .removeInterest ("eventsProcessed", this);
 		},
 		set_fontStyle__: function ()
 		{
 		   if (this .fontStyleNode)
-		      this .fontStyleNode .removeInterest (this, "addNodeEvent");
+		      this .fontStyleNode .removeInterest ("addNodeEvent", this);
 
 			this .fontStyleNode = X3DCast (X3DConstants .X3DFontStyleNode, this .fontStyle_);
 
 			if (! this .fontStyleNode)
 				this .fontStyleNode = this .getBrowser () .getDefaultFontStyle ();
 
-		   this .fontStyleNode .addInterest (this, "addNodeEvent");
+		   this .fontStyleNode .addInterest ("addNodeEvent", this);
 
 		   this .textGeometry = this .fontStyleNode .getTextGeometry (this);
 		},
@@ -148,6 +148,19 @@ function ($,
 			this .textGeometry .build ();
 
 			this .setSolid (this .solid_ .getValue ());
+		},
+		traverse: function (type, renderObject)
+		{
+			try
+			{
+				this .textGeometry .traverse (type, renderObject);
+
+				X3DGeometryNode .prototype .traverse .call (this, type, renderObject);
+			}
+			catch (error)
+			{
+				console .log (error);
+			}
 		},
 		display: function (context)
 		{
