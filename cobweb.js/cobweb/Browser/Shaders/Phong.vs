@@ -51,6 +51,7 @@ uniform mat4 x3d_TextureMatrix [x3d_MaxTextures];
 uniform mat3 x3d_NormalMatrix;
 uniform mat4 x3d_ProjectionMatrix;
 uniform mat4 x3d_ModelViewMatrix;
+uniform mat4 vr_ModelViewMatrix;
 
 uniform float x3d_LinewidthScaleFactor;
 uniform bool  x3d_Lighting;  // true if a X3DMaterialNode is attached, otherwise false
@@ -70,7 +71,7 @@ main ()
 {
 	gl_PointSize = x3d_LinewidthScaleFactor;
 
-	vec4 p = x3d_ModelViewMatrix * x3d_Vertex;
+	vec4 p = vr_ModelViewMatrix * x3d_ModelViewMatrix * x3d_Vertex;
 
 	if (x3d_Lighting)
 		vN = normalize (x3d_NormalMatrix * x3d_Normal);

@@ -520,7 +520,7 @@ function ($,
 				}
 			}
 		},
-		display: function (renderObject, viewport)
+		display: function (renderObject, viewport, viewMatrixArray)
 		{
 			if (this .hidden)
 				return;
@@ -545,7 +545,8 @@ function ($,
 
 			// Get projection matrix.
 
-			this .projectionMatrixArray .set (renderObject .getProjectionMatrix () .get ());	
+			this .projectionMatrixArray .set (renderObject .getProjectionMatrix () .get ());
+            this .viewMatrixArray = viewMatrixArray;
 
 			// Rotate and scale background.
 
@@ -591,6 +592,7 @@ function ($,
 
 			gl .uniformMatrix4fv (shaderNode .x3d_ProjectionMatrix, false, this .projectionMatrixArray);
 			gl .uniformMatrix4fv (shaderNode .x3d_ModelViewMatrix,  false, this .modelViewMatrixArray);
+            gl .uniformMatrix4fv (shaderNode .vr_ModelViewMatrix,   false, this .viewMatrixArray);
 
 			// Setup context.
 	
@@ -635,6 +637,7 @@ function ($,
 			gl .uniformMatrix4fv (shaderNode .x3d_TextureMatrix,    false, this .textureMatrixArray);
 			gl .uniformMatrix4fv (shaderNode .x3d_ProjectionMatrix, false, this .projectionMatrixArray);
 			gl .uniformMatrix4fv (shaderNode .x3d_ModelViewMatrix,  false, this .modelViewMatrixArray);
+            gl .uniformMatrix4fv (shaderNode .vr_ModelViewMatrix,   false, this .viewMatrixArray);
 
 			// Draw.
 

@@ -53,12 +53,14 @@ define ([
 	"cobweb/Bits/X3DCast",
 	"cobweb/Bits/X3DConstants",
 	"standard/Math/Numbers/Matrix3",
+    "standard/Math/Numbers/Matrix4",
 ],
 function ($,
           Fields,
           X3DCast,
           X3DConstants,
-          Matrix3)
+          Matrix3,
+          Matrix4)
 {
 "use strict";
 
@@ -182,6 +184,7 @@ function ($,
 			this .x3d_Viewport         = gl .getUniformLocation (program, "x3d_Viewport");
 			this .x3d_ProjectionMatrix = gl .getUniformLocation (program, "x3d_ProjectionMatrix");
 			this .x3d_ModelViewMatrix  = gl .getUniformLocation (program, "x3d_ModelViewMatrix");
+            this .vr_ModelViewMatrix   = gl .getUniformLocation (program, "vr_ModelViewMatrix");
 			this .x3d_NormalMatrix     = gl .getUniformLocation (program, "x3d_NormalMatrix");
 			this .x3d_TextureMatrix    = gl .getUniformLocation (program, "x3d_TextureMatrix");
 			
@@ -853,8 +856,11 @@ function ($,
 			else
 				gl .uniform4fv (this .x3d_ClipPlane [0], this .x3d_NoneClipPlane);
 		},
-		setGlobalUniforms: function (renderObject, gl, projectionMatrixArray, viewportArray)
+		setGlobalUniforms: function (renderObject, gl, projectionMatrixArray, viewportArray, vrModelViewMatrixArray)
 		{
+            if(!vrModelViewMatrixArray) {
+                vrModelViewMatrixArray = new Float32Array(Matrix4 .Identity);
+            }
 			var globalLights = renderObject .getGlobalLights ();
 
 			// Set viewport
@@ -864,6 +870,10 @@ function ($,
 			// Set projection matrix
 
 			gl .uniformMatrix4fv (this .x3d_ProjectionMatrix, false, projectionMatrixArray);
+            
+            // Set VR transform matrix
+            
+            gl .uniformMatrix4fv (this .vr_ModelViewMatrix, false, vrModelViewMatrixArray);
 
 			// Set global lights
 

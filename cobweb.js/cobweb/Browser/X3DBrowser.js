@@ -115,6 +115,12 @@ function ($,
 			X3DBrowserContext .prototype .initialize .call (this);
 
 			this .getLoadSensor () .loadTime_ .addInterest ("realize", this);
+            
+            if (window.webvrui) {
+                console.log(this .getCanvas());
+                this .enterVR = new webvrui.EnterVRButton(this .getCanvas()[0], {});
+                document.body.appendChild(this.enterVR.domElement);
+            }
 
 			this .print ("Welcome to " + this .name + " X3D Browser " + this .version + ":\n" +
 			                "        Current Graphics Renderer\n" +

@@ -85,6 +85,9 @@ function ($,
 		projectionMatrix            = new Matrix4 (),
 		projectionMatrixArray       = new Float32Array (16),
 		modelViewMatrix             = new Matrix4 (),
+        vrModelViewMatrix           = new Matrix4 (),
+        vrModelViewMatrixArray      = new Float32Array (vrModelViewMatrix),
+        Matrix4IdentityArray        = new Float32Array (new Matrix4 ()),
 		cameraSpaceProjectionMatrix = new Matrix4 (),
 		localOrientation            = new Rotation4 (0, 0, 1, 0),
 		yAxis                       = new Vector3 (0, 1, 0),
@@ -128,6 +131,23 @@ function ($,
 		this .depthShapes              = [ ];
 		this .invModelViewMatrix       = new Matrix4 ();
 		this .speed                    = 0;
+        this .vrFrameData = window.VRFrameData ? new window.VRFrameData() : undefined;
+        
+        if (this .getBrowser() .enterVR) {
+            var browser = this .getBrowser();
+            var that = this;
+            this .getBrowser() .enterVR .on("enter", function() {
+                console .log ("Entering VR");
+                browser .enterVR .getVRDisplay () .then(function(vrDisplay) {
+                    console .log ("Retrieving VR Display", vrDisplay);
+                    browser .requestAnimationFrame = vrDisplay.requestAnimationFrame.bind(vrDisplay);
+                    that .vrDisplay = vrDisplay;
+                });
+            }).on("exit", function() {
+                browser .requestAnimationFrame = window.requestAnimationFrame.bind(window);
+                that .vrDisplay = undefined;
+            });
+        }
 
 		try
 		{
@@ -729,6 +749,7 @@ function ($,
 			projectionMatrixArray .set (this .getProjectionMatrix () .get ());
 
 			gl .uniformMatrix4fv (shaderNode .x3d_ProjectionMatrix, false, projectionMatrixArray);
+            gl .uniformMatrix4fv (shaderNode .vr_ModelViewMatrix, false, vrModelViewMatrixArray);
 
 			// Configure viewport and background
 
@@ -779,156 +800,174 @@ function ($,
 		},
 		draw: function (group)
 		{
-			var
-				browser                  = this .getBrowser (),
-				gl                       = browser .getContext (),
-				viewport                 = this .getViewVolume () .getViewport (),
-				shaders                  = this .shaders,
-				lights                   = this .lights,
-				generatedCubeMapTextures = this .generatedCubeMapTextures;
+            
+            var
+                browser                  = this .getBrowser (),
+                gl                       = browser .getContext (),
+                viewport                 = this .getViewVolume () .getViewport (),
+                shaders                  = this .shaders,
+                lights                   = this .lights,
+                generatedCubeMapTextures = this .generatedCubeMapTextures;
 
 
-			// PREPARATIONS
+            // PREPARATIONS
+            
+            var vrProjectionMatrices = [projectionMatrixArray, projectionMatrixArray]; // [0] for left eye, [1] for right eye
+            var vrViewMatrices = [Matrix4IdentityArray, Matrix4IdentityArray]; // Identity due to separate composition within shaders.
+            var EYES = 1;
+            if (this .vrDisplay && this .vrDisplay .isPresenting) {
+                this .vrDisplay .getFrameData(this .vrFrameData);
+                vrProjectionMatrices = [this .vrFrameData .leftProjectionMatrix, this .vrFrameData .rightProjectionMatrix];
+                vrViewMatrices = [this .vrFrameData .leftViewMatrix, this .vrFrameData .rightViewMatrix];
+                EYES = 2;
+            }
 
 
-			if (this .isIndependent ())
-			{
-				// Render shadow maps.
+            if (this .isIndependent ())
+            {
+                // Render shadow maps.
 
-				for (var i = 0, length = lights .length; i < length; ++ i)
-					lights [i] .renderShadowMap (this);
-	
-				// Render GeneratedCubeMapTextures.
-			
-				for (var i = 0, length = generatedCubeMapTextures .length; i < length; ++ i)
-					generatedCubeMapTextures [i] .renderTexture (this, group);
-			}
+                for (var i = 0, length = lights .length; i < length; ++ i)
+                    lights [i] .renderShadowMap (this);
+    
+                // Render GeneratedCubeMapTextures.
+            
+                for (var i = 0, length = generatedCubeMapTextures .length; i < length; ++ i)
+                    generatedCubeMapTextures [i] .renderTexture (this, group);
+            }
+            for(var eye = 0; eye < EYES; eye++) {
 
-
-			// DRAW
-
-
-			// Set shadow matrix for all lights.
-
-			browser .getHeadlight () .setGlobalVariables (this);
-
-			for (var i = 0, length = lights .length; i < length; ++ i)
-				lights [i] .setGlobalVariables (this);
-
-			// Configure viewport and background
-
-			gl .viewport (viewport [0],
-			              viewport [1],
-			              viewport [2],
-			              viewport [3]);
-
-			gl .scissor (viewport [0],
-			             viewport [1],
-			             viewport [2],
-			             viewport [3]);
-
-			gl .clear (gl .DEPTH_BUFFER_BIT);
-
-			this .getBackground () .display (this, viewport);
-
-			// Sorted blend
-
-			viewportArray         .set (viewport);
-			projectionMatrixArray .set (this .getProjectionMatrix () .get ());
-
-			browser .getPointShader   () .setGlobalUniforms (this, gl, projectionMatrixArray, viewportArray);
-			browser .getLineShader    () .setGlobalUniforms (this, gl, projectionMatrixArray, viewportArray);
-			browser .getDefaultShader () .setGlobalUniforms (this, gl, projectionMatrixArray, viewportArray);
-
-			for (var id in shaders)
-				shaders [id] .setGlobalUniforms (this, gl, projectionMatrixArray, viewportArray);
-
-			// Render opaque objects first
-
-			gl .enable (gl .DEPTH_TEST);
-			gl .depthMask (true);
-			gl .disable (gl .BLEND);
-
-			for (var i = 0; i < this .numOpaqueShapes; ++ i)
-			{
-				var
-					context = this .opaqueShapes [i],
-					scissor = context .scissor;
-
-				gl .scissor (scissor .x,
-				             scissor .y,
-				             scissor .z,
-				             scissor .w);
-
-				context .shapeNode .display (context);
-			}
-
-			// Render transparent objects
-
-			gl .depthMask (false);
-			gl .enable (gl .BLEND);
-
-			this .transparencySorter .sort (0, this .numTransparentShapes);
-
-			for (var i = 0; i < this .numTransparentShapes; ++ i)
-			{
-				var
-					context = this .transparentShapes [i],
-					scissor = context .scissor;
-
-				gl .scissor (scissor .x,
-				             scissor .y,
-				             scissor .z,
-				             scissor .w);
-
-				context .shapeNode .display (context);
-			}
-
-			gl .depthMask (true);
-			gl .disable (gl .BLEND);
+                // DRAW
 
 
-			// POST DRAW
+                // Set shadow matrix for all lights.
+
+                browser .getHeadlight () .setGlobalVariables (this);
+
+                for (var i = 0, length = lights .length; i < length; ++ i)
+                    lights [i] .setGlobalVariables (this);
+
+                // Configure viewport and background
+
+                gl .viewport (viewport [0] + (eye * viewport[2]/EYES),
+                              viewport [1],
+                              viewport [2]/EYES,
+                              viewport [3]);
+
+                gl .scissor (viewport [0]  + (eye * viewport[2]/EYES),
+                             viewport [1],
+                             viewport [2]/EYES,
+                             viewport [3]);
+
+                gl .clear (gl .DEPTH_BUFFER_BIT);
+
+                this .getBackground () .display (this, viewport, vrViewMatrices[eye]);
+
+                // Sorted blend
+
+                viewportArray         .set (viewport);
+                projectionMatrixArray .set (this .getProjectionMatrix () .get ());
+
+                browser .getPointShader   () .setGlobalUniforms (this, gl, vrProjectionMatrices[eye], viewportArray, vrViewMatrices[eye]);
+                browser .getLineShader    () .setGlobalUniforms (this, gl, vrProjectionMatrices[eye], viewportArray, vrViewMatrices[eye]);
+                browser .getDefaultShader () .setGlobalUniforms (this, gl, vrProjectionMatrices[eye], viewportArray, vrViewMatrices[eye]);
+
+                for (var id in shaders)
+                    shaders [id] .setGlobalUniforms (this, gl, vrProjectionMatrices[eye], viewportArray, vrViewMatrices[eye]);
+
+                // Render opaque objects first
+
+                gl .enable (gl .DEPTH_TEST);
+                gl .depthMask (true);
+                gl .disable (gl .BLEND);
+
+                for (var i = 0; i < this .numOpaqueShapes; ++ i)
+                {
+                    var
+                        context = this .opaqueShapes [i],
+                        scissor = context .scissor;
+
+                    gl .scissor (scissor .x,
+                                 scissor .y,
+                                 scissor .z,
+                                 scissor .w);
+
+                    context .shapeNode .display (context);
+                }
+
+                // Render transparent objects
+
+                gl .depthMask (false);
+                gl .enable (gl .BLEND);
+
+                this .transparencySorter .sort (0, this .numTransparentShapes);
+
+                for (var i = 0; i < this .numTransparentShapes; ++ i)
+                {
+                    var
+                        context = this .transparentShapes [i],
+                        scissor = context .scissor;
+
+                    gl .scissor (scissor .x,
+                                 scissor .y,
+                                 scissor .z,
+                                 scissor .w);
+
+                    context .shapeNode .display (context);
+                }
+
+                gl .depthMask (true);
+                gl .disable (gl .BLEND);
+                
+            }
+            
+            if(this .vrDisplay && this .vrDisplay .isPresenting) {
+                this .vrDisplay .submitFrame();
+            }
 
 
-			gl .activeTexture (gl .TEXTURE0);
-
-			// Recycle clip planes.
-
-			var clipPlanes = this .getBrowser () .getClipPlanes ();
-
-			for (var i = 0, length = clipPlanes .length; i < length; ++ i)
-			   clipPlanes [i] .dispose ();
-
-			clipPlanes .length = 0;
-
-			// Reset GeneratedCubeMapTextures.
-
-			generatedCubeMapTextures .length = 0;
+            // POST DRAW
 
 
-			if (this .isIndependent ())
-			{
-				// Recycle global lights.
-	
-				var lights = this .globalLights;
-	
-				for (var i = 0, length = lights .length; i < length; ++ i)
-				   lights [i] .dispose ();
-	
-				// Recycle local lights.
-	
-				var lights = this .getBrowser () .getLocalLights ();
-	
-				for (var i = 0, length = lights .length; i < length; ++ i)
-				   lights [i] .dispose ();
-	
-				lights .length = 0;
-			}
+            gl .activeTexture (gl .TEXTURE0);
 
-			this .globalLights .length = 0;
-			this .lights       .length = 0;
-		},
+            // Recycle clip planes.
+
+            var clipPlanes = this .getBrowser () .getClipPlanes ();
+
+            for (var i = 0, length = clipPlanes .length; i < length; ++ i)
+               clipPlanes [i] .dispose ();
+
+            clipPlanes .length = 0;
+
+            // Reset GeneratedCubeMapTextures.
+
+            generatedCubeMapTextures .length = 0;
+
+
+            if (this .isIndependent ())
+            {
+                // Recycle global lights.
+    
+                var lights = this .globalLights;
+    
+                for (var i = 0, length = lights .length; i < length; ++ i)
+                   lights [i] .dispose ();
+    
+                // Recycle local lights.
+    
+                var lights = this .getBrowser () .getLocalLights ();
+    
+                for (var i = 0, length = lights .length; i < length; ++ i)
+                   lights [i] .dispose ();
+    
+                lights .length = 0;
+            }
+
+            this .globalLights .length = 0;
+            this .lights       .length = 0;
+
+        },
 	};
 
 	return X3DRenderObject;

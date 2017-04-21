@@ -57,6 +57,7 @@ uniform float x3d_Transparency;
 
 uniform mat4 x3d_ProjectionMatrix;
 uniform mat4 x3d_ModelViewMatrix;
+uniform mat4 vr_ModelViewMatrix;
 
 attribute vec4 x3d_Color;
 attribute vec4 x3d_Vertex;
@@ -70,7 +71,7 @@ main ()
 	// If we are points, make the gl_PointSize one pixel larger.
 	gl_PointSize = x3d_GeometryType == x3d_GeometryLines ? x3d_LinewidthScaleFactor : x3d_LinewidthScaleFactor + 1.0;
 
-	vec4 p = x3d_ModelViewMatrix * x3d_Vertex;
+	vec4 p = vr_ModelViewMatrix * x3d_ModelViewMatrix * x3d_Vertex;
 
 	v           = vec3 (p);
 	gl_Position = x3d_ProjectionMatrix * p;
