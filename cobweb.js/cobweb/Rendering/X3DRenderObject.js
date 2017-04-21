@@ -491,7 +491,8 @@ function ($,
 				distance        = bboxCenter .z,
 				viewVolume      = this .viewVolumes [this .viewVolumes .length - 1];
 
-			if (viewVolume .intersectsSphere (radius, bboxCenter))
+			//if (viewVolume .intersectsSphere (radius, bboxCenter))
+            if(true) // Always display all shapes. May be a bad approach
 			{
 				if (shapeNode .isTransparent ())
 				{
