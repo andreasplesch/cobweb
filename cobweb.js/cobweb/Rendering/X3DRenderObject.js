@@ -820,16 +820,14 @@ function ($,
                 this .vrDisplay .getFrameData(this .vrFrameData);
                 vrProjectionMatrices = [this .vrFrameData .leftProjectionMatrix, this .vrFrameData .rightProjectionMatrix];
                 vrViewMatrices = [this .vrFrameData .leftViewMatrix, this .vrFrameData .rightViewMatrix];
-                console.log("Left viewMatrix before staging", this .vrFrameData .leftViewMatrix);
                 EYES = 2;
                 if (this .vrDisplay .stageParameters) {
                     var invStageMatrix = new Matrix4().assign(this .vrDisplay .stageParameters .sittingToStandingTransform) .inverse ();
-                    console.log(invStageMatrix);
+                    var avHeight = this.getNavigationInfo().getAvatarHeight();
                     for(var i = 0; i < 2; i++) {
-                        vrViewMatrices[i] = new Float32Array(new Matrix4().assign(vrViewMatrices[i]).multLeft(invStageMatrix))
+                        vrViewMatrices[i] = new Float32Array(new Matrix4().assign(vrViewMatrices[i]).multLeft(invStageMatrix).translate({x: 0, y: avHeight, z: 0}))
                     }
                 }
-                console.log("Left viewMatrix after staging", vrViewMatrices[0]);
             }
 
 
