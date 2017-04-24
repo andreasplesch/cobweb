@@ -592,7 +592,6 @@ function ($,
 
 			gl .uniformMatrix4fv (shaderNode .x3d_ProjectionMatrix, false, this .projectionMatrixArray);
 			gl .uniformMatrix4fv (shaderNode .x3d_ModelViewMatrix,  false, this .modelViewMatrixArray);
-            gl .uniformMatrix4fv (shaderNode .vr_ModelViewMatrix,   false, this .viewMatrixArray);
 
 			// Setup context.
 	
@@ -637,7 +636,6 @@ function ($,
 			gl .uniformMatrix4fv (shaderNode .x3d_TextureMatrix,    false, this .textureMatrixArray);
 			gl .uniformMatrix4fv (shaderNode .x3d_ProjectionMatrix, false, this .projectionMatrixArray);
 			gl .uniformMatrix4fv (shaderNode .x3d_ModelViewMatrix,  false, this .modelViewMatrixArray);
-            gl .uniformMatrix4fv (shaderNode .vr_ModelViewMatrix,   false, this .viewMatrixArray);
 
 			// Draw.
 
