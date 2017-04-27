@@ -131,25 +131,10 @@ function ($,
 		this .depthShapes              = [ ];
 		this .invModelViewMatrix       = new Matrix4 ();
 		this .speed                    = 0;
-        this .eye                      = 0;
-        this .EYES                     = 1
-        this .vrFrameData = window.VRFrameData ? new window.VRFrameData() : undefined;
+
         
-        if (this .getBrowser() .enterVR) {
-            var browser = this .getBrowser();
-            var that = this;
-            this .getBrowser() .enterVR .on("enter", function() {
-                console .log ("Entering VR");
-                browser .enterVR .getVRDisplay () .then(function(vrDisplay) {
-                    console .log ("Retrieving VR Display", vrDisplay);
-                    browser .requestAnimationFrame = vrDisplay.requestAnimationFrame.bind(vrDisplay);
-                    that .vrDisplay = vrDisplay;
-                });
-            }).on("exit", function() {
-                browser .requestAnimationFrame = window.requestAnimationFrame.bind(window);
-                that .vrDisplay = undefined;
-            });
-        }
+        
+
 
 		try
 		{
@@ -395,8 +380,6 @@ function ($,
                     group .traverse (type, this);
                     this .draw (group);
                     
-                    this .getProjectionMatrix () .pop ();
-                    this .getModelViewMatrix () .pop ();
 					break;
 				}
 			}
@@ -848,14 +831,14 @@ function ($,
 
             // Configure viewport and background
 
-            gl .viewport (viewport [0] + (this.eye * viewport[2]/this.EYES),
+            gl .viewport (viewport [0] + (browser.eye * viewport[2]/browser.EYES),
                           viewport [1],
-                          viewport [2]/this.EYES,
+                          viewport [2]/browser.EYES,
                           viewport [3]);
 
-            gl .scissor (viewport [0]  + (this.eye * viewport[2]/this.EYES),
+            gl .scissor (viewport [0]  + (browser.eye * viewport[2]/browser.EYES),
                          viewport [1],
-                         viewport [2]/this.EYES,
+                         viewport [2]/browser.EYES,
                          viewport [3]);
 
             gl .clear (gl .DEPTH_BUFFER_BIT);

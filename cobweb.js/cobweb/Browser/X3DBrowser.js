@@ -121,6 +121,21 @@ function ($,
                 this .enterVR = new webvrui.EnterVRButton(this .getCanvas()[0], {});
                 document.body.appendChild(this.enterVR.domElement);
             }
+            
+            if (this .enterVR) {
+                var that = this;
+                this .enterVR .on("enter", function() {
+                    console .log ("Entering VR");
+                    that .enterVR .getVRDisplay () .then(function(vrDisplay) {
+                        console .log ("Retrieving VR Display", vrDisplay);
+                        that .requestAnimationFrame = vrDisplay.requestAnimationFrame.bind(vrDisplay);
+                        that .vrDisplay = vrDisplay;
+                    });
+                }).on("exit", function() {
+                    that .requestAnimationFrame = window.requestAnimationFrame.bind(window);
+                    that .vrDisplay = undefined;
+                });
+            }
 
 			this .print ("Welcome to " + this .name + " X3D Browser " + this .version + ":\n" +
 			                "        Current Graphics Renderer\n" +

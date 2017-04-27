@@ -274,59 +274,23 @@ function ($,
 			this .getCameraSpaceMatrix        () .pushMatrix (viewpoint .getCameraSpaceMatrix ());
 			this .getInverseCameraSpaceMatrix () .pushMatrix (viewpoint .getInverseCameraSpaceMatrix ());
 			this .getProjectionMatrix         () .pushMatrix (viewpoint .getProjectionMatrix (this));
-            
-            // VR code
-            this .EYES = 1;
-            var vrRendering = false;
-            if (this .vrDisplay && this .vrDisplay .isPresenting && type !== TraverseType .POINTER && type !== TraverseType .DEPTH) {
-                vrRendering = true;
-                this .vrDisplay .getFrameData(this .vrFrameData);
-                var vrProjectionMatrices = [new Matrix4 () .assign(this .vrFrameData .leftProjectionMatrix), new Matrix4 () .assign(this .vrFrameData .rightProjectionMatrix)];
-                var vrViewMatrices = [new Matrix4 () .assign(this .vrFrameData .leftViewMatrix), new Matrix4 () .assign(this .vrFrameData .rightViewMatrix)];
-                this .EYES = 2;
-                if (this .vrDisplay .stageParameters) {
-                    var invStageMatrix = new Matrix4().assign(this .vrDisplay .stageParameters .sittingToStandingTransform) .inverse ();
-                    var avHeight = this.getNavigationInfo().getAvatarHeight();
-                    for(var i = 0; i < 2; i++) {
-                        vrViewMatrices[i] = new Matrix4().assign(vrViewMatrices[i]).multLeft(invStageMatrix).translate({x: 0, y: avHeight, z: 0})
-                    }
-                }
-            }
-            console.log ("MatrixStack lengths:", this .getProjectionMatrix () .length, this .getInverseCameraSpaceMatrix () .length, this .getCameraSpaceMatrix () .length);
-            
-            for (this .eye = 0; this .eye < this .EYES; this .eye++) {
-                console.log("eye", this .eye);
-                if (vrRendering) {
-                    this .getCameraSpaceMatrix () .push ();
-                    this .getInverseCameraSpaceMatrix () .pushMatrix ( this .getCameraSpaceMatrix () .get (). copy() .inverse () .multRight (vrViewMatrices [this .eye])); // I don't understand the multRight at all
-                    this .getCameraSpaceMatrix () .pushMatrix (this .getInverseCameraSpaceMatrix () .get () .copy () .inverse ());
-                    this .getProjectionMatrix () .pushMatrix (vrProjectionMatrices [this .eye]);
-                }
-                switch (type)
-                {
-                    case TraverseType .POINTER:
-                        this .pointer (type, renderObject);
-                        break;
-                    case TraverseType .CAMERA:
-                        this .camera (type, renderObject);
-                        break;
-                    case TraverseType .COLLISION:
-                        this .collision (type, renderObject);
-                        break;
-                    case TraverseType .DEPTH:
-                    case TraverseType .DISPLAY:
-                        this .display (type, renderObject);
-                        if(this .vrDisplay && this .vrDisplay .isPresenting) {
-                            this .vrDisplay .submitFrame();
-                        }
-                        break;
-                }
-                if (vrRendering) {
-                    this .getProjectionMatrix         () .pop ();
-                    this .getInverseCameraSpaceMatrix () .pop ();
-                    this .getCameraSpaceMatrix        () .pop ();
-                }
-            }
+
+			switch (type)
+			{
+				case TraverseType .POINTER:
+					this .pointer (type, renderObject);
+					break;
+				case TraverseType .CAMERA:
+					this .camera (type, renderObject);
+					break;
+				case TraverseType .COLLISION:
+					this .collision (type, renderObject);
+					break;
+				case TraverseType .DEPTH:
+				case TraverseType .DISPLAY:
+					this .display (type, renderObject);
+					break;
+			}
 
 			this .getProjectionMatrix         () .pop ();
 			this .getInverseCameraSpaceMatrix () .pop ();
