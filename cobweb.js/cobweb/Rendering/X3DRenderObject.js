@@ -384,43 +384,19 @@ function ($,
 				}
 				case TraverseType .DISPLAY:
 				{
-                    // VR code
-                    var vrProjectionMatrices = [projectionMatrixArray, projectionMatrixArray]; // [0] for left eye, [1] for right eye
-                    var vrViewMatrices = [Matrix4IdentityArray, Matrix4IdentityArray]; // Identity due to separate composition within shaders.
-                    this .EYES = 1;
-                    if (this .vrDisplay && this .vrDisplay .isPresenting) {
-                        this .vrDisplay .getFrameData(this .vrFrameData);
-                        vrProjectionMatrices = [new Matrix4 () .assign(this .vrFrameData .leftProjectionMatrix), new Matrix4 () .assign(this .vrFrameData .rightProjectionMatrix)];
-                        vrViewMatrices = [new Matrix4 () .assign(this .vrFrameData .leftViewMatrix), new Matrix4 () .assign(this .vrFrameData .rightViewMatrix)];
-                        this .EYES = 2;
-                        if (this .vrDisplay .stageParameters) {
-                            var invStageMatrix = new Matrix4().assign(this .vrDisplay .stageParameters .sittingToStandingTransform) .inverse ();
-                            var avHeight = this.getNavigationInfo().getAvatarHeight();
-                            for(var i = 0; i < 2; i++) {
-                                vrViewMatrices[i] = new Matrix4().assign(vrViewMatrices[i]).multLeft(invStageMatrix).translate({x: 0, y: avHeight, z: 0})
-                            }
-                        }
-                    }
-                    for(this .eye = 0; this .eye < this .EYES; this .eye++) {
-                        this .lightIndex           = 0;
-                        this .numOpaqueShapes      = 0;
-                        this .numTransparentShapes = 0;
-                        
-                        this .getProjectionMatrix () .pushMatrix (vrProjectionMatrices [this .eye]);
-                        this .getModelViewMatrix () .push ();
-                        this .getModelViewMatrix () .get () .multRight (vrViewMatrices [this .eye]);
 
-                        this .setGlobalFog (this .getFog ());
+                    this .lightIndex           = 0;
+                    this .numOpaqueShapes      = 0;
+                    this .numTransparentShapes = 0;
+                    
 
-                        group .traverse (type, this);
-                        this .draw (group);
-                        
-                        this .getProjectionMatrix () .pop ();
-                        this .getModelViewMatrix () .pop ();
-                    }
-                    if(this .vrDisplay && this .vrDisplay .isPresenting) {
-                        this .vrDisplay .submitFrame();
-                    }
+                    this .setGlobalFog (this .getFog ());
+
+                    group .traverse (type, this);
+                    this .draw (group);
+                    
+                    this .getProjectionMatrix () .pop ();
+                    this .getModelViewMatrix () .pop ();
 					break;
 				}
 			}
@@ -896,7 +872,7 @@ function ($,
             browser .getDefaultShader () .setGlobalUniforms (this, gl, projectionMatrixArray, viewportArray);
 
             for (var id in shaders)
-                shaders [id] .setGlobalUniforms (this, gl, vrProjectionMatrices[eye], viewportArray);
+                shaders [id] .setGlobalUniforms (this, gl, projectionMatrixArray, viewportArray);
 
             // Render opaque objects first
 
