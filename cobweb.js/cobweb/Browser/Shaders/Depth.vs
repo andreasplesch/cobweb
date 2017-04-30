@@ -49,7 +49,6 @@ precision mediump float;
 
 uniform mat4 x3d_ProjectionMatrix;
 uniform mat4 x3d_ModelViewMatrix;
-uniform mat4 vr_ModelViewMatrix;
 
 attribute vec4 x3d_Vertex;
 
@@ -58,7 +57,7 @@ varying vec3 v; // point on geometry
 void
 main ()
 {
-	vec4 p = vr_ModelViewMatrix * x3d_ModelViewMatrix * x3d_Vertex;
+	vec4 p = x3d_ModelViewMatrix * x3d_Vertex;
 
 	v = p .xyz;
 

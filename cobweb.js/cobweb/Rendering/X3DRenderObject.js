@@ -85,8 +85,6 @@ function ($,
 		projectionMatrix            = new Matrix4 (),
 		projectionMatrixArray       = new Float32Array (16),
 		modelViewMatrix             = new Matrix4 (),
-        vrModelViewMatrix           = new Matrix4 (),
-        vrModelViewMatrixArray      = new Float32Array (vrModelViewMatrix),
         Matrix4IdentityArray        = new Float32Array (new Matrix4 ()),
 		cameraSpaceProjectionMatrix = new Matrix4 (),
 		localOrientation            = new Rotation4 (0, 0, 1, 0),
@@ -740,7 +738,6 @@ function ($,
 			projectionMatrixArray .set (this .getProjectionMatrix () .get ());
 
 			gl .uniformMatrix4fv (shaderNode .x3d_ProjectionMatrix, false, projectionMatrixArray);
-            gl .uniformMatrix4fv (shaderNode .vr_ModelViewMatrix, false, vrModelViewMatrixArray);
 
 			// Configure viewport and background
 
