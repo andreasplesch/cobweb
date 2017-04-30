@@ -451,12 +451,17 @@ function ($,
 
 				this .cameraSpaceMatrix .multRight (this .transformationMatrix);
                 
-				this .inverseCameraSpaceMatrix .assign (this .cameraSpaceMatrix) .inverse ();
-                
                 if (browser .vr) {
-                    this .inverseCameraSpaceMatrix .multRight (browser .vrFrameData [X3DConstants .VREyes .view [browser .eye]]);
-                    this .cameraSpaceMatrix .assign (this .inverseCameraSpaceMatrix) .inverse ();
+                    var viewMatrix = new Matrix4 () .assign (browser .vrFrameData [X3DConstants .VREyes .view [browser .eye]]) .inverse ();
+                    if (browser .vrDisplay .stageParameters) {
+                        var avHeight = browser .getActiveLayer () .getNavigationInfo () .getAvatarHeight ();
+                        this .cameraSpaceMatrix .translate ({x: 0, z: 0, y: -avHeight});
+                        this .cameraSpaceMatrix .multLeft (browser .vrDisplay .stageParameters .sittingToStandingTransform);
+                    }
+                    this .cameraSpaceMatrix .multLeft (viewMatrix);
                 }
+                
+                this .inverseCameraSpaceMatrix .assign (this .cameraSpaceMatrix) .inverse ();
 			}
 			catch (error)
 			{
