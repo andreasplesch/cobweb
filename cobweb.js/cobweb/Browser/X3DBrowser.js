@@ -130,10 +130,17 @@ function ($,
                         console .log ("Retrieving VR Display", vrDisplay);
                         that .requestAnimationFrame = vrDisplay.requestAnimationFrame.bind(vrDisplay);
                         that .vrDisplay = vrDisplay;
+                        that .oldCanvasWH = {width: that .getCanvas () .width, height: that .getCanvas () .height};
+                        var leftEye = vrDisplay .getEyeParameters("left");
+                        var rightEye = vrDisplay .getEyeParameters("right");
+                        that .getCanvas () [0] .width = Math .max(leftEye .renderWidth, rightEye .renderWidth) * 2;
+                        that .getCanvas () [0] .height = Math .max(leftEye .renderHeight, rightEye .renderHeight);
                         that .addBrowserEvent ();
                     });
                 }).on("exit", function() {
                     that .requestAnimationFrame = window.requestAnimationFrame.bind(window);
+                    that .getCanvas () [0] .width = that .oldCanvasWH .width;
+                    that .getCanvas () [0] .height = that .oldCanvasWH .height;
                     that .vrDisplay = undefined;
                 });
             }
