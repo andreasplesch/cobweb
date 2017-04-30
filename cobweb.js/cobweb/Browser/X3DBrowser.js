@@ -130,6 +130,7 @@ function ($,
                         console .log ("Retrieving VR Display", vrDisplay);
                         that .requestAnimationFrame = vrDisplay.requestAnimationFrame.bind(vrDisplay);
                         that .vrDisplay = vrDisplay;
+                        that .addBrowserEvent ();
                     });
                 }).on("exit", function() {
                     that .requestAnimationFrame = window.requestAnimationFrame.bind(window);

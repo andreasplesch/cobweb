@@ -299,6 +299,10 @@ function ($,
 			this .systemStartTime = performance .now ();
 
 			this .finished_ .processInterests ();
+            
+            if (this .vr) {
+                this .addBrowserEvent ();
+            }
 		},
 	});
 
