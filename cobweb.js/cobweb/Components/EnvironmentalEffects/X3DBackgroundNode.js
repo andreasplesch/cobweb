@@ -520,7 +520,7 @@ function ($,
 				}
 			}
 		},
-		display: function (renderObject, viewport, viewMatrixArray)
+		display: function (renderObject, viewport)
 		{
 			if (this .hidden)
 				return;
@@ -545,8 +545,7 @@ function ($,
 
 			// Get projection matrix.
 
-			this .projectionMatrixArray .set (renderObject .getProjectionMatrix () .get ());
-            this .viewMatrixArray = viewMatrixArray;
+			this .projectionMatrixArray .set (renderObject .getProjectionMatrix () .get ());	
 
 			// Rotate and scale background.
 

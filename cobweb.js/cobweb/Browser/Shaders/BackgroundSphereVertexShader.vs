@@ -60,7 +60,7 @@ varying vec3 v; // point on geometry
 void
 main ()
 {
-	vec4 p = vr_ModelViewMatrix * x3d_ModelViewMatrix * x3d_Vertex; // TODO: Figure out how to add vr_ModelViewMatrix
+	vec4 p = x3d_ModelViewMatrix * x3d_Vertex; // TODO: Figure out how to add vr_ModelViewMatrix
 
 	v           = p .xyz;
 	gl_Position = x3d_ProjectionMatrix * p;
