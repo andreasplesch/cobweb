@@ -274,7 +274,7 @@ function ($,
                 this .cameraTime = performance .now () - t1;
 
                 var t2 = performance .now ();
-                if (!this .vr && this .getCollisionCount ())
+                if (this .getCollisionCount ())
                     this .world .traverse (TraverseType .COLLISION, null);
                 this .collisionTime = performance .now () - t2;
 
