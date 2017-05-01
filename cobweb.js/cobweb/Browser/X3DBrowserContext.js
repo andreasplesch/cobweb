@@ -294,6 +294,8 @@ function ($,
             if (this .vr) {
                 this .vrDisplay .submitFrame ();
             }
+            
+            this .eye = 0; // In case anything wants current eye, e.g. X3DViewpointNode.getProjectionMatrix ()
 
 			this .browserTime     = performance .now () - t0;
 			this .systemStartTime = performance .now ();
