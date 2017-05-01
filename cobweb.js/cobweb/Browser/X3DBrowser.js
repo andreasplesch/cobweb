@@ -130,7 +130,7 @@ function ($,
                         console .log ("Retrieving VR Display", vrDisplay);
                         that .requestAnimationFrame = vrDisplay.requestAnimationFrame.bind(vrDisplay);
                         that .vrDisplay = vrDisplay;
-                        that .oldCanvasWH = {width: that .getCanvas () .width, height: that .getCanvas () .height};
+                        that .oldCanvasWH = {width: that .getCanvas () .width (), height: that .getCanvas () .height ()};
                         var leftEye = vrDisplay .getEyeParameters("left");
                         var rightEye = vrDisplay .getEyeParameters("right");
                         that .getCanvas () .width  (Math .max(leftEye .renderWidth, rightEye .renderWidth) * 2);
