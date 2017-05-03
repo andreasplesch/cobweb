@@ -207,10 +207,13 @@ function ($,
 		getProjectionMatrix: function (renderObject)
 		{
 			var navigationInfo = renderObject .getNavigationInfo ();
-
-			return this .getProjectionMatrixWithLimits (navigationInfo .getNearValue (),
-                                                     navigationInfo .getFarValue (this),
-                                                     renderObject .getLayer () .getViewport () .getRectangle (renderObject .getBrowser ()));
+            if (!this .getBrowser () .vr) {
+                return this .getProjectionMatrixWithLimits (navigationInfo .getNearValue (),
+                                                         navigationInfo .getFarValue (this),
+                                                         renderObject .getLayer () .getViewport () .getRectangle (renderObject .getBrowser ()));
+            } else {
+                return new Matrix4 () .assign (this .getBrowser () .vrFrameData [X3DConstants .VREyes .projection [this .getBrowser () .eye]]);
+            }
 		},
 		getCameraSpaceMatrix: function ()
 		{
@@ -439,14 +442,26 @@ function ($,
 		{
 			try
 			{
+                var browser = this .getBrowser();
+                
 				this .cameraSpaceMatrix .set (this .getUserPosition (),
 				                              this .getUserOrientation (),
 				                              this .scaleOffset_ .getValue (),
 				                              this .scaleOrientationOffset_ .getValue ());
 
 				this .cameraSpaceMatrix .multRight (this .transformationMatrix);
-
-				this .inverseCameraSpaceMatrix .assign (this .cameraSpaceMatrix) .inverse ();
+                
+                if (browser .vr) {
+                    var viewMatrix = new Matrix4 () .assign (browser .vrFrameData [X3DConstants .VREyes .view [browser .eye]]) .inverse ();
+                    if (browser .vrDisplay .stageParameters) {
+                        var avHeight = browser .getActiveLayer () .getNavigationInfo () .getAvatarHeight ();
+                        this .cameraSpaceMatrix .translate ({x: 0, z: 0, y: -avHeight});
+                        this .cameraSpaceMatrix .multLeft (browser .vrDisplay .stageParameters .sittingToStandingTransform);
+                    }
+                    this .cameraSpaceMatrix .multLeft (viewMatrix);
+                }
+                
+                this .inverseCameraSpaceMatrix .assign (this .cameraSpaceMatrix) .inverse ();
 			}
 			catch (error)
 			{

@@ -138,8 +138,11 @@ function ($,
 		this .changedTime           = 0;
 		this .renderCallback        = this .traverse .bind (this);
         this .requestAnimationFrame = window .requestAnimationFrame .bind (window);
-		this .systemTime            = 0
-		this .systemStartTime       = 0
+        this .vrFrameData           = window.VRFrameData ? new window.VRFrameData() : undefined;
+        this .EYES                  = 1;
+        this .eye                   = 0;
+		this .systemTime            = 0;
+		this .systemStartTime       = 0;
 		this .browserTime           = 0;
 		this .pickingTime           = 0;
 		this .cameraTime            = 0;
@@ -248,6 +251,14 @@ function ($,
 		},
 		traverse: function (time)
 		{
+            this .vr = this .vrDisplay && this .vrDisplay .isPresenting;
+            this .eye = 0;
+            if (this .vr) {
+                this .EYES = 2;
+                this .vrDisplay .getFrameData (this .vrFrameData);
+            } else {
+                this .EYES = 1;
+            }
 			var gl = this .getContext ();
 
 			var t0 = performance .now ();
@@ -257,31 +268,43 @@ function ($,
 			this .prepareEvents_ .processInterests ();
 			this .processEvents ();
 
-			var t1 = performance .now ();
-			this .world .traverse (TraverseType .CAMERA ,null);
-			this .cameraTime = performance .now () - t1;
+            for (this .eye = 0; this .eye < this .EYES; this .eye++) {
+                var t1 = performance .now ();
+                this .world .traverse (TraverseType .CAMERA ,null);
+                this .cameraTime = performance .now () - t1;
 
-			var t2 = performance .now ();
-			if (this .getCollisionCount ())
-				this .world .traverse (TraverseType .COLLISION, null);
-			this .collisionTime = performance .now () - t2;
+                var t2 = performance .now ();
+                if (this .getCollisionCount ())
+                    this .world .traverse (TraverseType .COLLISION, null);
+                this .collisionTime = performance .now () - t2;
 
-			this .sensors_ .processInterests ();
-			this .processEvents ();
+                this .sensors_ .processInterests ();
+                this .processEvents ();
 
-			// XXX: The depth buffer must be cleared here, although it is cleared in each layer, otherwise there is a
-			// XXX: phantom image in the depth buffer at least in Firefox.
+                // XXX: The depth buffer must be cleared here, although it is cleared in each layer, otherwise there is a
+                // XXX: phantom image in the depth buffer at least in Firefox.
 
-			var t3 = performance .now ();
-			gl .clearColor (0, 0, 0, 0);
-			gl .clear (gl .COLOR_BUFFER_BIT);
-			this .world .traverse (TraverseType .DISPLAY, null);
-			this .displayTime = performance .now () - t3;
+                var t3 = performance .now ();
+                gl .clearColor (0, 0, 0, 0);
+                //gl .clear (gl .COLOR_BUFFER_BIT); // XXX: Figure out what to do with this in VR
+                this .world .traverse (TraverseType .DISPLAY, null);
+                this .displayTime = performance .now () - t3;
+            }
+            
+            if (this .vr) {
+                this .vrDisplay .submitFrame ();
+            }
+            
+            this .eye = 0; // In case anything wants current eye, e.g. X3DViewpointNode.getProjectionMatrix ()
 
 			this .browserTime     = performance .now () - t0;
 			this .systemStartTime = performance .now ();
 
 			this .finished_ .processInterests ();
+            
+            if (this .vr) {
+                this .addBrowserEvent ();
+            }
 		},
 	});
 

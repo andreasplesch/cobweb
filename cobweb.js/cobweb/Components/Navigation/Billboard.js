@@ -90,6 +90,8 @@ function ($,
 		this .addType (X3DConstants .Billboard);
 		
 		this .matrix = new Matrix4 ();
+        
+        this .leftEyeMatrix = new Matrix4 (); // Used during VR
 	}
 
 	Billboard .prototype = $.extend (Object .create (X3DGroupingNode .prototype),
@@ -163,8 +165,18 @@ function ($,
 		traverse: function (type, renderObject)
 		{
 			var modelViewMatrix = renderObject .getModelViewMatrix ();
-
+            
 			modelViewMatrix .push ();
+            
+            var browser = renderObject .getBrowser ();
+            
+            var modelViewMatrixToLookAt = modelViewMatrix .get (); // Different if rendering right eye -- use left eye's matrix.
+            
+            if (browser .vr && browser .eye === 0) {
+                this .leftEyeMatrix = modelViewMatrix .get () .copy ();
+            } else if (browser .vr && browser .eye === 1) {
+                modelViewMatrixToLookAt = this .leftEyeMatrix;
+            }
 
 			try
 			{
@@ -176,7 +188,7 @@ function ($,
 						modelViewMatrix .multLeft (this .matrix);
 						break;
 					default:
-						modelViewMatrix .multLeft (this .rotate (modelViewMatrix .get ()));
+						modelViewMatrix .multLeft (this .rotate (modelViewMatrixToLookAt));
 						break;
 				}
 

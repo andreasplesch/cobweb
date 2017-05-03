@@ -121,6 +121,29 @@ function ($,
                 this .enterVR = new webvrui.EnterVRButton(this .getCanvas()[0], {});
                 document.body.appendChild(this.enterVR.domElement);
             }
+            
+            if (this .enterVR) {
+                var that = this;
+                this .enterVR .on("enter", function() {
+                    console .log ("Entering VR");
+                    that .enterVR .getVRDisplay () .then(function(vrDisplay) {
+                        console .log ("Retrieving VR Display", vrDisplay);
+                        that .requestAnimationFrame = vrDisplay.requestAnimationFrame.bind(vrDisplay);
+                        that .vrDisplay = vrDisplay;
+                        that .oldCanvasWH = {width: that .getCanvas () .width (), height: that .getCanvas () .height ()};
+                        var leftEye = vrDisplay .getEyeParameters("left");
+                        var rightEye = vrDisplay .getEyeParameters("right");
+                        that .getCanvas () .width  (Math .max(leftEye .renderWidth, rightEye .renderWidth) * 2);
+                        that .getCanvas () .height (Math .max(leftEye .renderHeight, rightEye .renderHeight));
+                        that .addBrowserEvent ();
+                    });
+                }).on("exit", function() {
+                    that .requestAnimationFrame = window.requestAnimationFrame.bind(window);
+                    that .getCanvas () .width  (that .oldCanvasWH .width);
+                    that .getCanvas () .height (that .oldCanvasWH .height);
+                    that .vrDisplay = undefined;
+                });
+            }
 
 			this .print ("Welcome to " + this .name + " X3D Browser " + this .version + ":\n" +
 			                "        Current Graphics Renderer\n" +

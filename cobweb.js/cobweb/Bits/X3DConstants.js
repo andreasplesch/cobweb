@@ -422,6 +422,8 @@ define (function ()
 		X3DProtoDeclarationNode:      nodeType ++,
 		X3DProtoDeclaration:          nodeType ++,
 		X3DExternProtoDeclaration:    nodeType ++,
+        
+        VREyes:                      {"projection": ["leftProjectionMatrix", "rightProjectionMatrix"], "view": ["leftViewMatrix", "rightViewMatrix"]}
 	};
 
 	Object .preventExtensions (X3DConstants);
