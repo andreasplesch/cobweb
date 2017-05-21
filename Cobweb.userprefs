@@ -1,14 +1,16 @@
 ﻿<Properties StartupItem="cobweb.js/cobweb.js.mdproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Default" />
-  <MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.Workbench ActiveDocument="cobweb.js/cobweb.html">
     <Files>
-      <File FileName="cobweb.js/cobweb.html" Line="438" Column="16" />
+      <File FileName="cobweb.js/cobweb.html" Line="1" Column="1" />
       <File FileName="cobweb.js/cobweb.release.html" Line="1" Column="1" />
-      <File FileName="cobweb.js/cobweb/Browser/VERSION.js" Line="1" Column="1" />
-      <File FileName="cobweb.js/Bookmarks.js" Line="1" Column="1" />
+      <File FileName="cobweb.js/cobweb/Browser/Core/X3DCoreContext.js" Line="1" Column="1" />
       <File FileName="cobweb.js/cobweb/Browser/X3DBrowser.js" Line="1" Column="1" />
-      <File FileName="cobweb.js/cobweb/Browser/Shaders/Phong.fs" Line="1" Column="1" />
-      <File FileName="cobweb.js/cobweb/Browser/Shaders/Phong.vs" Line="76" Column="19" />
+      <File FileName="cobweb.js/cobweb/Browser/Core/Notification.js" Line="1" Column="1" />
+      <File FileName="cobweb.js/cobweb/Browser/Networking/X3DNetworkingContext.js" Line="1" Column="1" />
+      <File FileName="cobweb.js/cobweb/Browser/Core/BrowserOptions.js" Line="1" Column="1" />
+      <File FileName="cobweb.js/cobweb/Browser/Core/BrowserTimings.js" Line="1" Column="1" />
+      <File FileName="cobweb.js/cobweb/Browser/Core/ContextMenu.js" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

@@ -54,6 +54,7 @@ define ([
 	"cobweb/Browser/Networking/urls",
 	"cobweb/Parser/Parser",
 	"cobweb/Parser/XMLParser",
+	"cobweb/Parser/JSONParser",
 	"standard/Networking/URI",
 	"lib/BinaryTransport",
 	"lib/pako/dist/pako_inflate",
@@ -65,6 +66,7 @@ function ($,
           urls,
           Parser,
           XMLParser,
+          JSONParser,
           URI,
           BinaryTransport,
           pako,
@@ -87,7 +89,7 @@ function ($,
 
 	var defaultParameter = new Fields .MFString ();
 
-	function Loader (node, external)
+	function FileLoader (node, external)
 	{
 		X3DObject .call (this);
 
@@ -100,9 +102,9 @@ function ($,
 		this .fileReader       = new FileReader ();
 	}
 
-	Loader .prototype = $.extend (Object .create (X3DObject .prototype),
+	FileLoader .prototype = $.extend (Object .create (X3DObject .prototype),
 	{
-		constructor: Loader,
+		constructor: FileLoader,
 		abort: function ()
 		{
 			this .callback      = Function .prototype;
@@ -127,10 +129,20 @@ function ($,
 				}
 				catch (exceptionParseXML)
 				{
-					// If we cannot parse XML we try to parse X3D Classic Encoding.	
+					// If we cannot parse XML we try to parse X3D JSON Encoding.	
+					try
+					{
 
-					new Parser (scene) .parseIntoScene (string);
+						setTimeout (this .importJS .bind (this, scene, JSON.parse (string), success, error), TIMEOUT);
 
+					}
+					catch (exceptionParseJSON)
+					{
+						// If we cannot parse XML we try to parse X3D Classic Encoding.	
+
+						new Parser (scene) .parseIntoScene (string);
+
+					}
 					this .setScene (scene, success);
 				}
 			}
@@ -141,15 +153,38 @@ function ($,
 					this .importDocument (scene, $.parseXML (string));
 					return scene;
 				}
-				catch (exception1)
+				catch (exceptionParseXML)
 				{
-					//var exception1 = new Error ("Couldn't parse XML");
 
-					// If we cannot parse XML we try to parse X3D Classic Encoding.	
-
-					new Parser (scene) .parseIntoScene (string);
-					return scene;
+					try
+					{
+						// If we cannot parse XML we try to parse X3D JSON Encoding.	
+						this .importJS (scene, JSON.parse (string));
+						return scene;
+					}
+					catch (exceptionParseJSON)
+					{
+						// If we cannot parse JSON we try to parse X3D Classic Encoding.	
+						new Parser (scene) .parseIntoScene (string);
+						return scene;
+					}
 				}
+			}
+		},
+		importJS: function (scene, jsobj, success, error) {
+			try
+			{
+				//AP: add reference to dom for later access
+				this.node.dom = new JSONParser (scene) .parseJavaScript (jsobj);
+				if (success)
+					this .setScene (scene, success);
+			}
+			catch (exception)
+			{
+				if (error)
+					error (exception);
+				else
+					throw exception;
 			}
 		},
 		importDocument: function (scene, dom, success, error)
@@ -226,7 +261,7 @@ function ($,
 					url: this .URL,
 					dataType: "text",
 					async: false,
-					cache: this .browser .doCaching (),
+					cache: this .browser .getBrowserOptions () .getCache (),
 					//timeout: 15000,
 					global: false,
 					context: this,
@@ -381,7 +416,7 @@ function ($,
 				url: this .URL,
 				dataType: "binary",
 				async: true,
-				cache: this .browser .doCaching (),
+				cache: this .browser .getBrowserOptions () .getCache (),
 				//timeout: 15000,
 				global: false,
 				context: this,
@@ -490,5 +525,5 @@ function ($,
 		},
 	});
 
-	return Loader;
+	return FileLoader;
 });

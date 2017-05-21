@@ -58,8 +58,9 @@ define ([
 	"cobweb/Configuration/SupportedComponents",
 	"cobweb/Configuration/SupportedNodes",
 	"cobweb/Execution/Scene",
-	"cobweb/InputOutput/Loader",
+	"cobweb/InputOutput/FileLoader",
 	"cobweb/Parser/XMLParser",
+	"cobweb/Parser/JSONParser",
 	"cobweb/Bits/X3DConstants",
 	"lib/gettext",
 ],
@@ -73,8 +74,9 @@ function ($,
           SupportedComponents,
           SupportedNodes,
           Scene,
-          Loader,
+          FileLoader,
           XMLParser,
+          JSONParser,
           X3DConstants,
           _)
 {
@@ -285,7 +287,7 @@ function ($,
 			var
 				currentScene = this .currentScene,
 				external     = this .isExternal (),
-				scene        = new Loader (this .getWorld ()) .createX3DFromString (this .currentScene .getURL (), x3dSyntax);
+				scene        = new FileLoader (this .getWorld ()) .createX3DFromString (this .currentScene .getURL (), x3dSyntax);
 
 			if (! external)
 			{
@@ -319,7 +321,7 @@ function ($,
 			var
 				currentScene = this .currentScene,
 				external     = this .isExternal (),
-				loader       = new Loader (this .getWorld ());
+				loader       = new FileLoader (this .getWorld ());
 
 			this .addLoadCount (loader);
 
@@ -357,7 +359,7 @@ function ($,
 			var
 				currentScene = this .currentScene,
 				external     = this .isExternal (),
-				scene        = new Loader (this .getWorld ()) .createX3DFromURL (url, null);
+				scene        = new FileLoader (this .getWorld ()) .createX3DFromURL (url, null);
 
 			if (! external)
 			{
@@ -387,15 +389,18 @@ function ($,
 			this .setBrowserLoading (true);
 			this .addLoadCount (this);
 
-			this .loader = new Loader (this .getWorld ());
+			this .loader = new FileLoader (this .getWorld ());
 
 			this .loader .createX3DFromURL (url, parameter,
 			function (scene)
 			{
+				if (! this .getBrowserOptions () .getSplashScreen ())
+					this .getCanvas () .fadeIn (0);
+
 				if (scene)
 					this .replaceWorld (scene);
 				else
-					setTimeout (function () { this .getLoadingElement () .find (".cobweb-spinner-text") .text (_ ("Failed loading world.")); } .bind (this), 31);
+					setTimeout (function () { this .getSplashScreen () .find (".cobweb-spinner-text") .text (_ ("Failed loading world.")); } .bind (this), 31);
 
 				// Must not remove load count, replaceWorld does a resetLoadCount when it sets setBrowserLoading to true.
 				// Don't set browser loading to false.
@@ -435,6 +440,27 @@ function ($,
 		removeBrowserCallback: function (callback)
 		{	
 			// Probably to be implemented like removeFieldCallback.
+		},
+		importJS: function (jsobj) {
+			var
+				currentScene = this .currentScene,
+				external     = this .isExternal (),
+				scene        = this .createScene ();
+
+			new JSONParser (scene) .parseJavaScript (jsobj);
+
+			if (! external)
+			{
+				scene .setExecutionContext (currentScene);
+				currentScene .isLive () .addInterest (scene, "setLive");
+						
+				if (currentScene .isLive () .getValue ())
+					scene .setLive (true);
+			}
+
+			scene .setup ();
+
+			return scene;
 		},
 		importDocument: function (dom)
 		{

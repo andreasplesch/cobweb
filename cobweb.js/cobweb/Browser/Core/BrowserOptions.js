@@ -74,6 +74,8 @@ function ($,
 
 		this .addAlias ("AntiAliased", this .Antialiased_);
 
+		this .setAttributeSplashScreen ();
+
 		this .primitiveQuality = PrimitiveQuality .MEDIUM;
 		this .textureQuality   = TextureQuality   .MEDIUM;
 	}
@@ -110,6 +112,7 @@ function ($,
 		{
 			X3DBaseNode .prototype .initialize .call (this);
 			
+			this .SplashScreen_              .addInterest ("set_splashScreen__", this);
 			this .Rubberband_                .addInterest ("set_rubberband__", this);
 			this .PrimitiveQuality_          .addInterest ("set_primitiveQuality__", this);
 			this .TextureQuality_            .addInterest ("set_textureQuality__", this);
@@ -139,10 +142,36 @@ function ($,
 				rubberband       = this .getBrowser () .getDataStorage () ["BrowserOptions.Rubberband"],
 				primitiveQuality = this .getBrowser () .getDataStorage () ["BrowserOptions.PrimitiveQuality"],
 				textureQuality   = this .getBrowser () .getDataStorage () ["BrowserOptions.TextureQuality"];
-				
+
+			this .setAttributeSplashScreen ();
+
 			if (rubberband       !== undefined && rubberband       !== this .Rubberband_       .getValue ()) this .Rubberband_       = rubberband;
 			if (primitiveQuality !== undefined && primitiveQuality !== this .PrimitiveQuality_ .getValue ()) this .PrimitiveQuality_ = primitiveQuality;
 			if (textureQuality   !== undefined && textureQuality   !== this .TextureQuality_   .getValue ()) this .TextureQuality_   = textureQuality;
+		},
+		setAttributeSplashScreen: function ()
+		{
+			this .SplashScreen_ .set (this .getSplashScreen ());
+		},
+		getSplashScreen: function ()
+		{
+			return this .getBrowser () .getElement () .attr ("splashScreen") !== "false";
+		},
+		getNotifications: function ()
+		{
+			return this .getBrowser () .getElement () .attr ("notifications") !== "false";
+		},
+		getTimings: function ()
+		{
+			return this .getBrowser () .getElement () .attr ("timings") !== "false";
+		},
+		getContextMenu: function ()
+		{
+			return this .getBrowser () .getElement () .attr ("contextMenu") !== "false";
+		},
+		getCache: function ()
+		{
+			return this .getBrowser () .getElement () .attr ("cache") !== "false";
 		},
 		getPrimitiveQuality: function ()
 		{
@@ -155,6 +184,10 @@ function ($,
 		getShading: function ()
 		{
 			return this .Shading_ .getValue ();
+		},
+		set_splashScreen__: function (splashScreen)
+		{
+			this .getBrowser () .getElement () .attr ("splashScreen", splashScreen .getValue () ? "true" : "false");
 		},
 		set_rubberband__: function (rubberband)
 		{

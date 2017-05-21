@@ -8,6 +8,7 @@
 
 	<!-- COBWEB START -->
 	<link rel="stylesheet" type="text/css" href="cobweb.css"/>
+	<script src="jam/require.js"></script>
 	<script type="text/javascript" src="cobweb.min.js"></script>
 	<!-- COBWEB END -->
 
@@ -112,13 +113,9 @@ li + .bookmark-section {
 }
 
 .browser {
+	display: block;
 	width: auto;
 	height: 100%;
-}
-
-.second-browser {
-	float: left;
-	margin-right: 20px;
 }
 
 .fallback {
@@ -445,10 +442,12 @@ X3D (function (X3DCanvases)
 		{ name: 'Shader Pipeline', url: [ "tests/Components/Shaders/Pipeline.x3d" ] },
 		{ name: 'Shader Images',   url: [ "tests/Components/Shaders/images.x3d" ] },
 		{ name: 'Shader Fields',   url: [ "tests/Components/Shaders/Fields.x3d" ] },
+		{ name: 'SFRotation',      url: [ "tests/Components/Shaders/ComposedShaderUniformRotation.x3d" ] },
 		{ name: 'Water Quality',   url: [ "examples/water/water.x3d" ] },
 		{ name: 'Water Quality 2', url: [ "examples/water/water2.x3d" ] },
 		{ name: 'Waves',           url: [ "tests/Components/Shaders/Waves.x3d" ] },
 		{ name: 'Mountains',       url: [ "tests/Components/Shaders/Mountains.x3d" ] },
+		{ name: 'Mandelbox',       url: [ "tests/Components/Shaders/Mandelbox.x3d" ] },
 
 		{ name: 'Vertex Attributes' },
 		{ name: 'Float',         url: [ "tests/Components/Shaders/FloatVertexAttribute.x3d" ] },
@@ -515,7 +514,7 @@ function loadURL ()
 		<div class="content">
 			<div class="tests">
 				<div class="bookmarks"></div>
-				<X3DCanvas class="browser" cache="false" xsrc="https://cdn.rawgit.com/create3000/Titania/master/Library/Tests/Follower/OrientationChaser.wrl">
+				<X3DCanvas splashScreen="true" class="browser" cache="false" xsrc="https://cdn.rawgit.com/create3000/Titania/master/Library/Tests/Follower/OrientationChaser.wrl">
 					<p class="fallback">Sorry,<br/>
 						it wasn't me!<br/>
 						<br/>
@@ -533,7 +532,10 @@ function loadURL ()
 					</tr>
 				</table>
 				<div class="toggle"><a href="cobweb.html">cobweb.html</a> | <a href="http://rawgit.com/create3000/cobweb/master/cobweb.js/cobweb.min.html">github</a></div>
-				<xX3DCanvas class="second-browser" cache="false" src="tests/Components/Rendering/IndexedLineSet.x3d"></xX3DCanvas>
+				<p>Second
+					<X3DCanvas splashScreen="false" timings="false" notification="false" contextMenu="false" cache="false" src="tests/Components/Rendering/IndexedLineSet.x3d"></X3DCanvas>
+					<canvas style="background: red;"></canvas>
+					Browser</p>
 				<p class="version cobweb-min"></p>
 				<p class="-cobweb-console"></p>
 			</div>
